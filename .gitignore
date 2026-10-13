@@ -1,0 +1,30 @@
+# Secrets
+.env
+*.pem
+*.key
+*.pfx
+*.p12
+
+# Azure
+.azure/
+
+# Deployment artifacts
+artifacts/
+output/
+.work/
+
+# Local configuration
+*.local
+.env.*
+
+# Editors
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
+# Temporary files
+*.tmp
+*.log
+*~
