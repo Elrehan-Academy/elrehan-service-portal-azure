@@ -28,3 +28,6 @@ output/
 *.tmp
 *.log
 *~
+
+# Upstream iTop distribution packages
+docker/iTop-*.zip

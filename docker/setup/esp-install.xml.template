@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<installation>
+  <mode>install</mode>
+
+  <optional_steps>
+    <log-parameters>1</log-parameters>
+    <migrate-before>1</migrate-before>
+    <migrate-after>1</migrate-after>
+    <copy>1</copy>
+  </optional_steps>
+
+  <source_dir>datamodels/2.x/</source_dir>
+  <datamodel_version>3.3.0</datamodel_version>
+  <extensions_dir>extensions</extensions_dir>
+  <target_env>production</target_env>
+  <workspace_dir></workspace_dir>
+
+  <database>
+    <server>__DB_HOST__</server>
+    <user>__DB_USER__</user>
+    <pwd>__DB_PASSWORD__</pwd>
+    <name>__DB_NAME__</name>
+    <db_tls_enabled></db_tls_enabled>
+    <db_tls_ca></db_tls_ca>
+    <prefix></prefix>
+  </database>
+
+  <url>__ESP_URL__</url>
+  <graphviz_path>/usr/bin/dot</graphviz_path>
+
+  <admin_account>
+    <user>__ESP_ADMIN_USER__</user>
+    <pwd>__ESP_ADMIN_PASSWORD__</pwd>
+    <language>EN US</language>
+  </admin_account>
+
+  <language>EN US</language>
+
+  <sample_data>0</sample_data>
+  <old_addon></old_addon>
+  <options type="array"/>
+  <mysql_bindir></mysql_bindir>
+
+  <selected_modules type="array">
+  </selected_modules>
+
+  <selected_extensions type="array">
+    <item>itop-config-mgmt-datacenter</item>
+    <item>itop-config-mgmt-end-user</item>
+    <item>itop-config-mgmt-storage</item>
+    <item>itop-config-mgmt-virtualization</item>
+    <item>itop-service-mgmt-enterprise</item>
+    <item>itop-ticket-mgmt-itil</item>
+    <item>itop-ticket-mgmt-itil-user-request</item>
+    <item>itop-ticket-mgmt-itil-incident</item>
+    <item>itop-ticket-mgmt-itil-enhanced-portal</item>
+    <item>itop-change-mgmt-itil</item>
+    <item>itop-config-mgmt-core</item>
+  </selected_extensions>
+
+  <use_symbolic_links>off</use_symbolic_links>
+</installation>
