@@ -57,3 +57,13 @@ RUN chown -R www-data:www-data \
       /var/www/html/extensions/elrehan-service-portal \
  && find /var/www/html/extensions/elrehan-service-portal \
       -type f -exec chmod 0644 {} \;
+
+# Zero-touch ESP unattended installation assets
+COPY docker/setup/esp-install.xml.template \
+     /opt/esp/setup/esp-install.xml.template
+
+COPY docker/scripts/bootstrap-esp.sh \
+     /usr/local/bin/bootstrap-esp.sh
+
+RUN chmod 0644 /opt/esp/setup/esp-install.xml.template \
+ && chmod 0755 /usr/local/bin/bootstrap-esp.sh
