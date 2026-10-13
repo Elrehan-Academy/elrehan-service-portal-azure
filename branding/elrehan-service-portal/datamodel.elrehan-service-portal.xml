@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<itop_design xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="3.2">
+
+  <branding>
+    <main_logo _delta="define">elrehan-service-portal/main-logo-dark.png</main_logo>
+    <main_logo_compact _delta="define">elrehan-service-portal/compact-emblem-dark.png</main_logo_compact>
+
+    <login_logo _delta="define">elrehan-service-portal/login-portal-logo.png</login_logo>
+    <portal_logo _delta="define">elrehan-service-portal/login-portal-logo.png</portal_logo>
+
+    <main_favicon _delta="define">elrehan-service-portal/compact-emblem-dark.png</main_favicon>
+    <login_favicon _delta="define">elrehan-service-portal/compact-emblem-dark.png</login_favicon>
+    <portal_favicon _delta="define">elrehan-service-portal/compact-emblem-dark.png</portal_favicon>
+  </branding>
+
+  <dictionaries>
+    <dictionary id="EN US" _delta="must_exist">
+      <entries>
+        <entry id="UI:Login:Title" _delta="force"><![CDATA[Elrehan Service Portal – Sign in]]></entry>
+        <entry id="UI:Login:Logo:AltText" _delta="force"><![CDATA[Elrehan Service Portal logo]]></entry>
+        <entry id="UI:Login:Welcome" _delta="force"><![CDATA[Welcome to Elrehan Service Portal]]></entry>
+        <entry id="UI:Login:IdentifyYourself" _delta="force"><![CDATA[Sign in to access services, requests, approvals, and infrastructure records.]]></entry>
+        <entry id="UI:Button:Login" _delta="force"><![CDATA[Sign in to ESP]]></entry>
+
+        <entry id="UI:Login:ForgotPwdForm+" _delta="force"><![CDATA[Elrehan Service Portal can send you instructions to reset your account password.]]></entry>
+        <entry id="UI:ResetPwd-EmailSubject" _delta="force"><![CDATA[Reset your Elrehan Service Portal password]]></entry>
+        <entry id="UI:ResetPwd-EmailBody" _delta="force"><![CDATA[<body><p>You requested a password reset for Elrehan Service Portal.</p><p>Follow this single-use link to <a href="%1$s">enter a new password</a>.</p></body>]]></entry>
+
+        <entry id="UI:LogOffMenu" _delta="force"><![CDATA[Sign out]]></entry>
+        <entry id="UI:LogOff:ThankYou" _delta="force"><![CDATA[You have signed out of Elrehan Service Portal.]]></entry>
+        <entry id="UI:LogOff:ClickHereToLoginAgain" _delta="force"><![CDATA[Sign in again...]]></entry>
+        <entry id="UI:ChangePwdMenu" _delta="force"><![CDATA[Change portal password...]]></entry>
+
+        <entry id="UI:Login:About" _delta="force"><![CDATA[Elrehan Service Portal — Powered by iTop, developed by Combodo — Branding and automation by Elrehan]]></entry>
+
+        <entry id="UI:Login:Error:AccessRestricted" _delta="force"><![CDATA[Access to this page is restricted. Please contact an Elrehan Service Portal administrator.]]></entry>
+        <entry id="UI:Login:Error:AccessAdmin" _delta="force"><![CDATA[This area requires administrator privileges. Please contact an Elrehan Service Portal administrator.]]></entry>
+
+        <entry id="UI:WelcomeToITop" _delta="force"><![CDATA[Welcome to Elrehan Service Portal]]></entry>
+        <entry id="Menu:WelcomeMenu+" _delta="force"><![CDATA[Welcome to Elrehan Service Portal]]></entry>
+        <entry id="Menu:WelcomeMenuPage+" _delta="force"><![CDATA[Welcome to Elrehan Service Portal]]></entry>
+        <entry id="UI:WelcomeMenu:Title" _delta="force"><![CDATA[Welcome to Elrehan Service Portal]]></entry>
+
+        <entry id="UI:WelcomePopup:Message:330_01_Welcome:Title" _delta="force"><![CDATA[Welcome to Elrehan Service Portal]]></entry>
+
+        <entry id="Page:DefaultTitle" _delta="force"><![CDATA[Elrehan Service Portal]]></entry>
+        <entry id="Portal:Title" _delta="force"><![CDATA[Elrehan Service Portal]]></entry>
+        <entry id="Brick:Portal:AggregatePage:DefaultTitle" _delta="force"><![CDATA[Elrehan Service Portal]]></entry>
+
+        <entry id="UI:AccessRO-All" _delta="force"><![CDATA[Elrehan Service Portal is read-only]]></entry>
+        <entry id="UI:AccessRO-Users" _delta="force"><![CDATA[Elrehan Service Portal is read-only for end users]]></entry>
+
+        <entry id="portal:backoffice" _delta="force"><![CDATA[Elrehan Service Portal administration console]]></entry>
+      </entries>
+    </dictionary>
+
+    <dictionary id="EN GB" _delta="must_exist">
+      <entries>
+        <entry id="UI:Login:Title" _delta="force"><![CDATA[Elrehan Service Portal – Sign in]]></entry>
+        <entry id="UI:Login:Logo:AltText" _delta="force"><![CDATA[Elrehan Service Portal logo]]></entry>
+        <entry id="UI:Login:Welcome" _delta="force"><![CDATA[Welcome to Elrehan Service Portal]]></entry>
+        <entry id="UI:Login:IdentifyYourself" _delta="force"><![CDATA[Sign in to access services, requests, approvals, and infrastructure records.]]></entry>
+        <entry id="UI:Button:Login" _delta="force"><![CDATA[Sign in to ESP]]></entry>
+
+        <entry id="UI:Login:ForgotPwdForm+" _delta="force"><![CDATA[Elrehan Service Portal can send you instructions to reset your account password.]]></entry>
+        <entry id="UI:ResetPwd-EmailSubject" _delta="force"><![CDATA[Reset your Elrehan Service Portal password]]></entry>
+        <entry id="UI:ResetPwd-EmailBody" _delta="force"><![CDATA[<body><p>You requested a password reset for Elrehan Service Portal.</p><p>Follow this single-use link to <a href="%1$s">enter a new password</a>.</p></body>]]></entry>
+
+        <entry id="UI:LogOffMenu" _delta="force"><![CDATA[Sign out]]></entry>
+        <entry id="UI:LogOff:ThankYou" _delta="force"><![CDATA[You have signed out of Elrehan Service Portal.]]></entry>
+        <entry id="UI:LogOff:ClickHereToLoginAgain" _delta="force"><![CDATA[Sign in again...]]></entry>
+        <entry id="UI:ChangePwdMenu" _delta="force"><![CDATA[Change portal password...]]></entry>
+
+        <entry id="UI:Login:About" _delta="force"><![CDATA[Elrehan Service Portal — Powered by iTop, developed by Combodo — Branding and automation by Elrehan]]></entry>
+
+        <entry id="UI:Login:Error:AccessRestricted" _delta="force"><![CDATA[Access to this page is restricted. Please contact an Elrehan Service Portal administrator.]]></entry>
+        <entry id="UI:Login:Error:AccessAdmin" _delta="force"><![CDATA[This area requires administrator privileges. Please contact an Elrehan Service Portal administrator.]]></entry>
+
+        <entry id="UI:WelcomeToITop" _delta="force"><![CDATA[Welcome to Elrehan Service Portal]]></entry>
+        <entry id="Menu:WelcomeMenu+" _delta="force"><![CDATA[Welcome to Elrehan Service Portal]]></entry>
+        <entry id="Menu:WelcomeMenuPage+" _delta="force"><![CDATA[Welcome to Elrehan Service Portal]]></entry>
+        <entry id="UI:WelcomeMenu:Title" _delta="force"><![CDATA[Welcome to Elrehan Service Portal]]></entry>
+
+        <entry id="UI:WelcomePopup:Message:330_01_Welcome:Title" _delta="force"><![CDATA[Welcome to Elrehan Service Portal]]></entry>
+
+        <entry id="Page:DefaultTitle" _delta="force"><![CDATA[Elrehan Service Portal]]></entry>
+        <entry id="Portal:Title" _delta="force"><![CDATA[Elrehan Service Portal]]></entry>
+        <entry id="Brick:Portal:AggregatePage:DefaultTitle" _delta="force"><![CDATA[Elrehan Service Portal]]></entry>
+
+        <entry id="UI:AccessRO-All" _delta="force"><![CDATA[Elrehan Service Portal is read-only]]></entry>
+        <entry id="UI:AccessRO-Users" _delta="force"><![CDATA[Elrehan Service Portal is read-only for end users]]></entry>
+
+        <entry id="portal:backoffice" _delta="force"><![CDATA[Elrehan Service Portal administration console]]></entry>
+      </entries>
+    </dictionary>
+  </dictionaries>
+
+</itop_design>

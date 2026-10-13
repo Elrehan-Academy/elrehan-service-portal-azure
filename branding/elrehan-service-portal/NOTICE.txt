@@ -1,0 +1,12 @@
+Elrehan Service Portal
+
+Powered by iTop, developed by Combodo.
+Branding and automation by Elrehan.
+
+Elrehan Service Portal is a customized deployment of the iTop open-source
+IT service management and CMDB platform. iTop is developed by Combodo SAS
+and contributors and is distributed under the GNU Affero General Public
+License, version 3.
+
+Elrehan Service Portal is not presented as an official Combodo product and
+is not endorsed by Combodo SAS.
