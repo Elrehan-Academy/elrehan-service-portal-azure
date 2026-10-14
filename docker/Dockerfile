@@ -67,3 +67,13 @@ COPY docker/scripts/bootstrap-esp.sh \
 
 RUN chmod 0644 /opt/esp/setup/esp-install.xml.template \
  && chmod 0755 /usr/local/bin/bootstrap-esp.sh
+
+# ESP container lifecycle:
+# zero-touch installation on first start, safe skip on later starts,
+# then Apache becomes the foreground process.
+COPY docker/scripts/entrypoint-esp.sh \
+     /usr/local/bin/entrypoint-esp.sh
+
+RUN chmod 0755 /usr/local/bin/entrypoint-esp.sh
+
+ENTRYPOINT ["/usr/local/bin/entrypoint-esp.sh"]
