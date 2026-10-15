@@ -19,3 +19,9 @@ Development in progress.
 - `tests/` - deployment and application validation
 - `docs/` - architecture and operational documentation
 - `.github/workflows/` - CI validation
+
+## Operations
+
+For container lifecycle, backup, restore, recovery, safety guidance, and
+engineering issue/resolution history, see the
+[ESP Operations Runbook](docs/operations.md).

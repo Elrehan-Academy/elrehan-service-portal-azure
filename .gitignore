@@ -31,3 +31,7 @@ output/
 
 # Upstream iTop distribution packages
 docker/iTop-*.zip
+
+# ESP backups contain configuration and may contain credentials.
+# Never commit application backup artifacts.
+backups/
