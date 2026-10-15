@@ -780,22 +780,526 @@ Azure-specific backup storage, retention, encryption, and disaster-recovery
 automation belong to the Azure infrastructure/security implementation rather
 than this local Sprint 7 container lifecycle.
 
-## HTTPS
+## Sprint 9 HTTPS, Certificates, and Azure Security
 
-TLS is intentionally outside this Sprint 7 container-operations scope.
+Sprint 9 adds the public HTTPS and security layer to the single-VM Azure
+deployment established during Sprint 8.
 
-The production Azure design must include:
+### HTTPS Architecture
 
-- DNS
-- Nginx TLS termination/reverse proxy
-- HTTP-to-HTTPS redirect
-- Let's Encrypt certificate issuance
-- automatic certificate renewal
-- Nginx reload after renewal
-- renewal dry-run/staging validation
+The validated request path is:
 
-Initial certificate issuance alone is not sufficient acceptance evidence.
-Renewal must also be proven.
+    Internet
+        ->
+    Azure NSG TCP/443
+        ->
+    Nginx TLS termination
+        ->
+    http://127.0.0.1:8080
+        ->
+    ESP Apache/PHP container
+
+TCP/80 is retained for HTTP-to-HTTPS redirect and ACME HTTP validation.
+
+The ESP container itself remains bound only to:
+
+    127.0.0.1:8080
+
+Port 8080 is not exposed by the Azure NSG and was independently verified as
+inaccessible from the deployment workstation.
+
+### Azure DNS
+
+The Azure Standard Public IP uses an optional parameterized DNS label.
+
+The Sprint 9 test deployment uses:
+
+    elrehan-service-portal.westeurope.cloudapp.azure.com
+
+The Bicep root module accepts `dnsLabel` and passes it to the compute module.
+The compute module configures the Public IP `dnsSettings` only when a DNS
+label is supplied.
+
+The root deployment also exposes the resulting Public IP FQDN as an output.
+
+This allows later automation to use the same infrastructure-derived FQDN for
+application installation and HTTPS configuration.
+
+### Fresh-Installation Public URL
+
+`scripts/deploy-esp-application.sh` requires:
+
+    --fqdn <public-esp-fqdn>
+
+The unattended iTop installation now receives:
+
+    ESP_URL=https://<public-esp-fqdn>
+
+while the container listener remains independently configured as:
+
+    ESP_BIND_ADDRESS=127.0.0.1
+    ESP_HTTP_PORT=8080
+
+The public application identity and the private backend listener are therefore
+separate concerns.
+
+This prevents a new deployment from using `http://127.0.0.1:8080` as iTop's
+canonical application URL.
+
+The deployer validates the supplied FQDN and rejects malformed values before
+connecting to the Azure host.
+
+### Nginx and Certificate Automation
+
+`scripts/configure-esp-https.sh`:
+
+1. verifies the ESP host bootstrap and healthy application container;
+2. installs Nginx, Certbot, and the Certbot Nginx plugin;
+3. configures Nginx to proxy only to `127.0.0.1:8080`;
+4. requests a Let's Encrypt certificate when no certificate exists;
+5. reuses an existing valid certificate on later runs;
+6. enables HTTP-to-HTTPS redirect;
+7. configures iTop with its public HTTPS application identity;
+8. enables reverse-proxy awareness;
+9. installs a Certbot renewal deploy hook that validates and reloads Nginx;
+10. enables `certbot.timer`;
+11. validates HTTPS and records evidence.
+
+The HTTPS automation does not use `--force-renewal` or duplicate-certificate
+behavior.
+
+When an existing certificate and renewal configuration are present, the script
+checks that the certificate is valid for more than 24 hours and uses
+`certbot install` to reapply the existing certificate to the regenerated Nginx
+configuration without requesting a replacement certificate.
+
+### Certificate Acceptance
+
+The Sprint 9 certificate was successfully issued for:
+
+    elrehan-service-portal.westeurope.cloudapp.azure.com
+
+Validated certificate properties included:
+
+- Let's Encrypt issuer
+- public FQDN as certificate subject
+- successful external HTTPS connection
+- HTTP 301 redirect to HTTPS
+- HTTPS final status 200
+- certificate expiry `2027-01-13`
+
+Initial certificate issuance alone was not considered sufficient acceptance.
+
+### Automatic Certificate Renewal
+
+Automatic renewal uses the operating-system Certbot timer:
+
+    certbot.timer
+
+The timer is enabled and active.
+
+The deploy hook is:
+
+    /etc/letsencrypt/renewal-hooks/deploy/reload-nginx.sh
+
+After a successful renewal the hook:
+
+1. runs `nginx -t`;
+2. reloads Nginx.
+
+A separate renewal simulation was executed with:
+
+    certbot renew --dry-run
+
+The simulated renewal completed successfully.
+
+Evidence is stored on the Azure VM under:
+
+    /opt/esp/evidence/certificate-renewal.txt
+
+The evidence records:
+
+- `renewal_dry_run=PASS`
+- Nginx active
+- ESP web container healthy
+- MariaDB container healthy
+- HTTPS 200
+- Certbot timer active
+- renewal hook present
+- overall result PASS
+
+### iTop Public HTTPS Identity
+
+The public iTop configuration is:
+
+    app_root_url=https://elrehan-service-portal.westeurope.cloudapp.azure.com
+    behind_reverse_proxy=true
+
+Nginx supplies the required proxy headers, including:
+
+- `Host`
+- `X-Real-IP`
+- `X-Forwarded-For`
+- `X-Forwarded-Proto`
+
+Rendered public-page acceptance proved:
+
+- HTTPS status 200
+- zero `127.0.0.1` or localhost URL references
+- 53 references to the public HTTPS FQDN during the acceptance run
+
+The production iTop configuration remains:
+
+    owner=www-data
+    group=www-data
+    mode=0440
+
+### HTTPS Idempotency
+
+The HTTPS automation was deliberately rerun against the initialized Sprint 9
+Azure VM.
+
+Before and after the rerun, the certificate had the same:
+
+- SHA-256 fingerprint
+- serial number
+- `notBefore`
+- `notAfter`
+
+The script reported that the existing certificate was found and reused.
+
+After the rerun:
+
+- HTTPS remained 200
+- `app_root_url` remained the public HTTPS FQDN
+- `behind_reverse_proxy` remained true
+- no replacement certificate was issued
+
+This validates the existing-certificate path independently from initial
+certificate issuance.
+
+### HTTPS Reboot Acceptance
+
+The Azure VM was restarted after HTTPS and renewal configuration.
+
+Post-reboot validation proved:
+
+- Docker active
+- Nginx active
+- `certbot.timer` active
+- ESP web container healthy
+- MariaDB container healthy
+- ESP listener still `127.0.0.1:8080`
+- internal application HTTP 200
+- public HTTPS 200
+- certificate persisted unchanged
+- public TCP/8080 remained inaccessible
+
+Evidence is stored under:
+
+    /opt/esp/evidence/https-reboot-acceptance.txt
+
+### Sprint 9 Security Acceptance
+
+Final security acceptance proved:
+
+- SSH TCP/22 restricted to the deployment workstation `/32`
+- HTTP TCP/80 allowed for redirect and ACME
+- HTTPS TCP/443 allowed publicly
+- ESP TCP/8080 inaccessible externally
+- ESP backend listener restricted to `127.0.0.1:8080`
+- `/opt/esp/config/esp.env` owned by `root:root`, mode `0600`
+- iTop production configuration owned by `www-data:www-data`, mode `0440`
+- Docker active
+- Nginx active
+- Certbot timer active
+- renewal hook present and executable
+- web and database containers healthy
+- no Git repository metadata under `/opt/esp`
+- no deployment SSH private key, Git credential file, or equivalent deployment
+  credential found under `/home/azureuser` or `/opt/esp`
+- no obvious tracked GitHub PAT, private key, or Azure client-secret material
+  found by the repository acceptance scan
+
+The Azure VM does not require access to the private GitHub repository.
+
+### Sprint 9 Evidence
+
+The primary Azure-host evidence files are:
+
+    /opt/esp/evidence/https.txt
+    /opt/esp/evidence/certificate-renewal.txt
+    /opt/esp/evidence/https-reboot-acceptance.txt
+
+Together with the Sprint 8 application and reboot evidence, these demonstrate
+the application, persistence, HTTPS, renewal, and reboot lifecycle.
+
+### Sprint 9 Engineering Issues and Resolutions
+
+#### Bicep DNS patch matched the wrong source text
+
+**Symptom**
+
+The first scripted attempt to add the DNS-label parameter stopped with:
+
+    FAIL: expected sshPublicKey parameter block not found in main.bicep
+
+**Root cause**
+
+The patch expected description text that did not exactly match the source
+file.
+
+**Resolution**
+
+The existing Bicep source was inspected first and the patch was reapplied
+against the exact source text.
+
+**Validation**
+
+The failed attempt left the repository unchanged. The corrected Bicep source
+subsequently compiled and passed Azure deployment validation.
+
+#### HTTPS automation contained a test-host dependency
+
+**Issue**
+
+An early HTTPS automation draft validated the specific Sprint 8 hostname
+`esp-s8-vm`.
+
+That would prevent the same automation from being reused by a clean Sprint 10
+deployment.
+
+**Resolution**
+
+Target validation was changed to use generic ESP bootstrap state, runtime
+configuration, and container health rather than a specific VM hostname.
+
+**Validation**
+
+The source contains no Sprint 8 hostname dependency and successfully operated
+against the existing ESP runtime.
+
+#### Localhost was used as iTop's application identity
+
+**Symptom**
+
+TLS and Nginx were operational, but rendered iTop pages contained absolute
+URLs referencing:
+
+    http://127.0.0.1:8080
+
+The effective configuration showed:
+
+    app_root_url=http://127.0.0.1:8080
+    behind_reverse_proxy=false
+
+**Root cause**
+
+The initial Azure application deployer used one localhost value for iTop's
+canonical application URL while also correctly binding the container to
+localhost.
+
+Application identity and listener binding had been conflated.
+
+**Resolution**
+
+The lifecycle now separates the two concepts.
+
+Fresh installations require a public FQDN and use:
+
+    ESP_URL=https://<public-esp-fqdn>
+
+while continuing to use:
+
+    ESP_BIND_ADDRESS=127.0.0.1
+    ESP_HTTP_PORT=8080
+
+HTTPS automation also enforces `behind_reverse_proxy=true`.
+
+**Validation**
+
+The rendered public page contained zero localhost references and 53 references
+to the public HTTPS FQDN during acceptance.
+
+#### Docker exec did not attach standard input
+
+**Symptom**
+
+The first automated iTop identity migration appeared to execute, but the
+configuration remained unchanged and the expected migration output was absent.
+
+**Root cause**
+
+The script supplied the migration through a heredoc to:
+
+    docker exec esp-web-1 sh -s
+
+without attaching standard input.
+
+**Resolution**
+
+The command was changed to:
+
+    docker exec -i esp-web-1 sh -s
+
+**Validation**
+
+A diagnostic test proved that the command without `-i` executed no supplied
+input, while the `-i` form produced the expected output.
+
+#### PHP replacement syntax corrupted the reverse-proxy setting
+
+**Symptom**
+
+A later migration attempt emitted PHP warnings involving `${1}`.
+
+Inspection showed a partially migrated configuration:
+
+    app_root_url=https://elrehan-service-portal.westeurope.cloudapp.azure.com
+
+but the original:
+
+    'behind_reverse_proxy' => false,
+
+had become:
+
+    true,
+
+PHP syntax remained valid, but the `behind_reverse_proxy` key no longer
+existed in `$MySettings`.
+
+**Root cause**
+
+The PHP replacement string used:
+
+    "${1}true"
+
+to represent a regular-expression capture-group replacement.
+
+PHP interpreted `${1}` as variable interpolation instead of the intended
+regular-expression backreference.
+
+**Resolution**
+
+The known-good pre-HTTPS configuration backup was used as the deterministic
+repair baseline.
+
+A repaired candidate was created first, then validated for:
+
+- PHP syntax
+- exact public `app_root_url`
+- `behind_reverse_proxy=true`
+
+Only after all checks passed was it atomically activated.
+
+The automation source was then changed to avoid the ambiguous capture-group
+replacement.
+
+**Validation**
+
+The repaired live configuration reported:
+
+    app_root_url=https://elrehan-service-portal.westeurope.cloudapp.azure.com
+    behind_reverse_proxy=true
+
+with mode `0440`, ownership `www-data:www-data`, healthy containers, and
+HTTPS 200.
+
+#### Partial migration required backup-based recovery
+
+**Issue**
+
+The failed PHP migration was not completely non-mutating. The first
+replacement succeeded before the second replacement damaged the reverse-proxy
+setting.
+
+**Resolution**
+
+HTTPS identity migration creates a timestamped pre-change configuration backup
+before modification.
+
+The failed state was inspected before any further write, and the known-good
+backup was used as the repair source rather than repeatedly editing the damaged
+configuration.
+
+**Validation**
+
+The backup passed PHP syntax validation and contained the original localhost
+URL and complete `behind_reverse_proxy` setting. The repaired configuration
+passed independent runtime and public-page acceptance.
+
+#### Expected grep no-match interacted with pipefail
+
+**Symptom**
+
+A validation command could terminate when counting an expected zero number of
+localhost references.
+
+**Root cause**
+
+`grep` returns status 1 when there are no matches. With `set -o pipefail`,
+that expected no-match status caused the pipeline to fail.
+
+**Resolution**
+
+Zero-match validation explicitly tolerates the grep status before piping the
+result to `wc -l`.
+
+**Validation**
+
+Public-page acceptance completed successfully and reported:
+
+    localhost_reference_count=0
+
+#### Existing certificate behavior was implicit
+
+**Issue**
+
+The first HTTPS automation always invoked `certbot --nginx`.
+
+Although Certbot normally avoids unnecessary replacement of an unexpired
+certificate, the deployment automation did not explicitly control this
+behavior.
+
+**Resolution**
+
+The script now distinguishes between first issuance and an existing
+certificate.
+
+When the certificate, private key, and renewal configuration already exist,
+the script:
+
+1. checks certificate validity;
+2. refuses an existing certificate expiring within 24 hours;
+3. uses `certbot install` to reapply the certificate;
+4. does not request a new certificate.
+
+**Validation**
+
+A live idempotency test preserved the certificate fingerprint, serial number,
+start date, and expiry date exactly while HTTPS remained 200.
+
+#### SSH exposure was parameterized
+
+**Risk**
+
+An early infrastructure draft could have left SSH broadly accessible.
+
+**Resolution**
+
+The NSG SSH rule uses the required `sshSourceAddressPrefix` Bicep parameter.
+The deployment workstation public address is supplied as a `/32`.
+
+**Validation**
+
+Sprint 9 final security acceptance showed:
+
+    Allow-SSH  77.248.238.151/32  TCP/22
+    Allow-HTTP *                  TCP/80
+    Allow-HTTPS *                TCP/443
+
+ESP TCP/8080 remained inaccessible externally.
+
 
 ## Current Limitations
 

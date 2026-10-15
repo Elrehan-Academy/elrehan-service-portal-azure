@@ -26,6 +26,9 @@ param adminUsername string = 'azureuser'
 @description('SSH public key used for administrator authentication.')
 param sshPublicKey string
 
+@description('Azure Public IP DNS label. Leave empty to disable the Azure-provided FQDN.')
+param dnsLabel string = ''
+
 var bootstrapScript = loadTextContent('cloud-init/bootstrap.sh')
 
 var tags = {
@@ -56,6 +59,7 @@ module compute 'modules/compute.bicep' = {
     adminUsername: adminUsername
     sshPublicKey: sshPublicKey
     customData: base64(bootstrapScript)
+    dnsLabel: dnsLabel
     tags: tags
   }
 }
@@ -66,3 +70,4 @@ output nsgId string = network.outputs.nsgId
 output vmId string = compute.outputs.vmId
 output vmName string = compute.outputs.vmName
 output publicIpAddress string = compute.outputs.publicIpAddress
+output publicIpFqdn string = compute.outputs.publicIpFqdn

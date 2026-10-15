@@ -7,6 +7,7 @@ usage() {
 Usage:
   deploy-esp-application.sh \
     --host <public-ip-or-fqdn> \
+    --fqdn <public-esp-fqdn> \
     --package <esp-deployment.tar.gz> \
     [--user azureuser] \
     [--identity ~/.ssh/id_ed25519]
@@ -22,6 +23,7 @@ USAGE
 }
 
 HOST=''
+FQDN=''
 REMOTE_USER='azureuser'
 IDENTITY="$HOME/.ssh/id_ed25519"
 PACKAGE=''
@@ -30,6 +32,10 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --host)
       HOST="${2:?missing --host value}"
+      shift 2
+      ;;
+    --fqdn)
+      FQDN="${2:?missing --fqdn value}"
       shift 2
       ;;
     --user)
@@ -60,6 +66,21 @@ done
   echo 'FAIL: --host is required' >&2
   exit 2
 }
+
+[[ -n "$FQDN" ]] || {
+  echo 'FAIL: --fqdn is required' >&2
+  exit 2
+}
+
+if [[ ! "$FQDN" =~ ^[A-Za-z0-9.-]+$ ]]; then
+  echo 'FAIL: --fqdn contains invalid characters' >&2
+  exit 2
+fi
+
+if [[ "$FQDN" != *.* ]]; then
+  echo 'FAIL: --fqdn must be a fully qualified domain name' >&2
+  exit 2
+fi
 
 [[ -s "$PACKAGE" ]] || {
   echo 'FAIL: --package must reference an existing non-empty file' >&2
@@ -169,7 +190,7 @@ ITOP_VERSION=3.3.0-21411
 ESP_IMAGE=local/esp:3.3.0-21411
 ESP_BIND_ADDRESS=127.0.0.1
 ESP_HTTP_PORT=8080
-ESP_URL=http://127.0.0.1:8080
+ESP_URL=https://${FQDN}
 ESP_DB_NAME=itop
 ESP_DB_USER=itop
 DB_ROOT_PASSWORD=${DB_ROOT_PASSWORD}

@@ -19,6 +19,9 @@ param sshPublicKey string
 @description('Base64-encoded VM bootstrap script.')
 param customData string
 
+@description('Azure Public IP DNS label. Leave empty to omit DNS settings.')
+param dnsLabel string = ''
+
 @description('Tags applied to Azure resources.')
 param tags object = {}
 
@@ -36,6 +39,9 @@ resource publicIp 'Microsoft.Network/publicIPAddresses@2024-05-01' = {
   }
   properties: {
     publicIPAllocationMethod: 'Static'
+    dnsSettings: empty(dnsLabel) ? null : {
+      domainNameLabel: dnsLabel
+    }
   }
 }
 
@@ -124,3 +130,4 @@ output vmName string = vm.name
 output nicId string = nic.id
 output publicIpId string = publicIp.id
 output publicIpAddress string = publicIp.properties.ipAddress
+output publicIpFqdn string = empty(dnsLabel) ? '' : publicIp.properties.dnsSettings.fqdn
