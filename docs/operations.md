@@ -510,6 +510,252 @@ parse it separately.
 The hardened lookup correctly found the `db` alias, and the subsequent negative
 guard test passed.
 
+## Sprint 8 Azure Deployment
+
+Sprint 8 established the first reproducible Azure deployment of the Elrehan
+Service Portal.
+
+### Architecture
+
+The validated Azure deployment uses:
+
+- Azure resource group `rg-esp-sprint8-weu`
+- West Europe
+- Ubuntu 24.04 LTS
+- parameterized VM size, validated with `Standard_B2s`
+- Azure VNet and dedicated ESP subnet
+- NSG with SSH restricted to the deployment workstation address
+- static Standard public IP
+- SSH-key authentication only
+- Docker Engine and Docker Compose installed during host bootstrap
+- ESP Apache/PHP container
+- MariaDB 10.11 container
+- persistent Docker volumes for database, configuration, application data, and
+  compiled production environment
+- ESP HTTP listener bound only to `127.0.0.1:8080`
+
+The Azure VM does not require a GitHub PAT or GitHub repository credentials.
+Deployment artifacts are created by the trusted deployment workstation and
+transferred to the VM over SSH.
+
+The private GitHub repository therefore remains outside the runtime trust
+boundary.
+
+### Deployment Package
+
+`scripts/package-esp-deployment.sh` creates a deployment archive containing
+only the required application build inputs.
+
+The upstream iTop archive is included in the deployment package but remains
+excluded from Git.
+
+The package is accompanied by a SHA-256 checksum and manifest identifying the
+iTop version, iTop archive checksum, creation time, and source Git commit.
+
+### Application Deployment
+
+`scripts/deploy-esp-application.sh`:
+
+1. validates the deployment-package checksum;
+2. waits for SSH;
+3. waits for Azure host bootstrap readiness;
+4. refuses to overwrite an initialized ESP deployment;
+5. generates runtime credentials only for a new deployment;
+6. transfers the deployment package and protected runtime environment;
+7. builds and starts the Docker Compose application;
+8. waits for ESP container health;
+9. follows the normal iTop HTTP redirect and requires final HTTP 200;
+10. validates the database.
+
+Runtime credentials are stored in:
+
+    /opt/esp/config/esp.env
+
+with mode `0600` and ownership `root:root`.
+
+### Azure Acceptance Evidence
+
+The Sprint 8 Azure deployment passed application acceptance before reboot:
+
+- ESP web container: healthy
+- MariaDB container: healthy
+- final HTTP status after redirect: 200
+- database tables: 249
+- branding checks: 4/4
+- production configuration: mode 440, owner `www-data:www-data`
+- runtime environment: mode 600, owner `root:root`
+- ESP production module: compiled
+- application listener: `127.0.0.1:8080`
+
+Evidence is stored on the test VM under:
+
+    /opt/esp/evidence/application.txt
+
+### Reboot and Persistence Acceptance
+
+The Azure VM was restarted using Azure VM restart.
+
+Docker was enabled at boot and the ESP and MariaDB containers restarted
+automatically without running `docker compose up` manually.
+
+Post-reboot acceptance proved:
+
+- Docker service active
+- ESP web container healthy
+- MariaDB container healthy
+- 249 database tables preserved
+- final HTTP status 200
+- branding checks 4/4
+- production configuration permissions preserved
+- runtime secret permissions preserved
+- ESP module remained compiled
+- listener remained `127.0.0.1:8080`
+- persistent Docker volumes remained present
+- pre-reboot acceptance evidence survived the VM restart
+
+The persistent volumes validated were:
+
+- `db-data`
+- `esp-conf`
+- `esp-data`
+- `esp-env-production`
+
+Post-reboot evidence is stored under:
+
+    /opt/esp/evidence/reboot-acceptance.txt
+
+### Sprint 8 Engineering Issues and Resolutions
+
+#### Deployment package checksum path
+
+**Symptom**
+
+Checksum validation failed after changing into the artifact directory.
+
+**Root cause**
+
+The checksum file contained the relative path `artifacts/<package>` while the
+validation process was already executing from inside `artifacts/`.
+
+This resulted in an effective lookup of `artifacts/artifacts/<package>`.
+
+**Resolution**
+
+Checksum generation now occurs from inside the output directory and records
+only the package basename.
+
+**Validation**
+
+The rebuilt deployment artifact passed `sha256sum -c`.
+
+#### Protected application directory
+
+**Symptom**
+
+The first application deployment stopped with:
+
+    cd: /opt/esp/app: Permission denied
+
+**Root cause**
+
+`/opt/esp/app` is intentionally protected as `root:root` mode `0750`, but the
+deployment command attempted to enter it as the unprivileged Azure SSH user.
+
+**Resolution**
+
+Application build and startup operations are executed with root privileges
+while retaining the protected directory ownership and permissions.
+
+**Validation**
+
+The ESP image subsequently built successfully and the Compose workload
+started.
+
+#### Docker Compose project context
+
+**Issue**
+
+Compose health and diagnostic commands were executed outside the application
+directory and did not explicitly identify the Compose project file.
+
+**Resolution**
+
+Non-build Compose operations now specify both:
+
+    --project-directory "$APP_ROOT"
+    -f "$APP_ROOT/compose.yaml"
+
+**Validation**
+
+All expected Compose execution contexts were structurally checked before the
+deployment retry.
+
+#### iTop root HTTP redirect
+
+**Symptom**
+
+The application deployer reported:
+
+    FAIL: ESP HTTP status=302
+
+even though the web container was healthy.
+
+**Root cause**
+
+A request to the iTop root path legitimately redirects:
+
+    / -> /pages/UI.php
+
+The validator checked only the first HTTP response.
+
+**Resolution**
+
+The deployment validator now follows redirects with `curl -L` and evaluates
+the final HTTP response.
+
+**Validation**
+
+The root request returned HTTP 302, `/pages/UI.php` returned HTTP 200, and the
+complete redirect chain finished with HTTP 200. All four expected branding
+checks were also present.
+
+#### Initialized deployment credential protection
+
+**Risk**
+
+The original deployer generated new MariaDB and ESP administrator credentials
+on every invocation.
+
+Because the MariaDB database is persistent, rerunning the installer against an
+initialized host could replace the runtime environment with new credentials
+while the existing database retained the original credentials.
+
+**Resolution**
+
+Before credential generation or payload transfer, the deployer checks for an
+existing non-empty:
+
+    /opt/esp/config/esp.env
+
+If found, deployment stops without generating credentials or overwriting the
+application.
+
+Upgrade and restore operations must use their dedicated workflows instead of
+the initial-deployment path.
+
+**Validation**
+
+A deliberate rerun against the initialized Azure test VM exited with code 1.
+
+The test proved:
+
+- existing runtime configuration detected;
+- overwrite refused;
+- credential generation was never reached;
+- payload transfer was never reached;
+- both existing containers remained healthy;
+- ESP continued returning final HTTP 200.
+
 ## Production Backup Direction
 
 The current scripts establish the application-level backup and restore
