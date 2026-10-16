@@ -38,11 +38,26 @@ cp "$ROOT/compose.yaml" "$STAGE/esp/"
 cp -a "$ROOT/docker" "$STAGE/esp/"
 cp -a "$ROOT/branding" "$STAGE/esp/"
 
+# Preserve licensing, attribution and third-party notices in every
+# redistributable ESP deployment artifact.
+for compliance_file in LICENSE NOTICE.md THIRD_PARTY_NOTICES.md; do
+  if [[ ! -s "$ROOT/$compliance_file" ]]; then
+    echo "FAIL: required compliance file missing: $compliance_file" >&2
+    exit 1
+  fi
+
+  cp "$ROOT/$compliance_file" "$STAGE/esp/"
+done
+
 cat > "$STAGE/esp/DEPLOYMENT-MANIFEST.txt" <<MANIFEST
 artifact=Elrehan Service Portal
 created_at=${TIMESTAMP}
 itop_version=${ITOP_VERSION}
 itop_sha256=${ACTUAL_ITOP_SHA256}
+itop_license=GNU Affero General Public License v3
+upstream=Combodo iTop Community
+modified_distribution=yes
+branding_and_automation=Elrehan
 source_commit=$(git -C "$ROOT" rev-parse HEAD)
 MANIFEST
 
