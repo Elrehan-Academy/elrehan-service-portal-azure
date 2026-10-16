@@ -138,6 +138,7 @@ server {
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_set_header X-Forwarded-Port 443;
     }
 }
 NGINX
@@ -193,7 +194,7 @@ nginx -t
 
 echo 'Configuring iTop public HTTPS identity...'
 
-PUBLIC_URL="https://${FQDN}"
+PUBLIC_URL="https://${FQDN}/"
 
 docker exec -i \
     -e ESP_PUBLIC_URL="$PUBLIC_URL" \

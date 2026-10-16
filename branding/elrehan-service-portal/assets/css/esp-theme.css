@@ -1,0 +1,81 @@
+/*
+ * Elrehan Service Portal (ESP)
+ * Blue visual identity
+ *
+ * Powered by iTop, developed by Combodo.
+ * Branding and automation by Elrehan.
+ */
+
+:root {
+    --esp-navy-950: #02152b;
+    --esp-navy-900: #06203f;
+    --esp-navy-800: #0b2a52;
+
+    --esp-blue-700: #0057d9;
+    --esp-blue-600: #0066ff;
+    --esp-blue-500: #1683ff;
+
+    --esp-cyan-500: #00b4ff;
+
+    --esp-blue-100: #dcecff;
+    --esp-blue-50: #f3f8ff;
+
+    --esp-white: #ffffff;
+}
+
+/*
+ * Navigation
+ */
+.ibo-navigation-menu {
+    background-color: var(--esp-navy-950);
+}
+
+.ibo-navigation-menu--menu-entry:hover {
+    background-color: var(--esp-navy-800);
+}
+
+/*
+ * Primary actions
+ */
+.ibo-button-primary,
+.btn-primary {
+    background-color: var(--esp-blue-600);
+    border-color: var(--esp-blue-600);
+    color: var(--esp-white);
+}
+
+.ibo-button-primary:hover,
+.ibo-button-primary:focus,
+.btn-primary:hover,
+.btn-primary:focus {
+    background-color: var(--esp-blue-700);
+    border-color: var(--esp-blue-700);
+    color: var(--esp-white);
+}
+
+/*
+ * Links
+ */
+a {
+    color: var(--esp-blue-700);
+}
+
+a:hover,
+a:focus {
+    color: var(--esp-blue-600);
+}
+
+/*
+ * Focus / selected elements
+ */
+.ibo-is-active,
+.active > a {
+    border-color: var(--esp-blue-600);
+}
+
+/*
+ * Keep the main workspace bright and readable.
+ */
+body {
+    background-color: var(--esp-blue-50);
+}

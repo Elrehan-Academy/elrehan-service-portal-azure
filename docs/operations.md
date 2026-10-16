@@ -1316,3 +1316,243 @@ It does not yet provide:
 
 Those capabilities can be introduced in later editions without changing the
 basic ESP application backup model.
+
+## Sprint 10 Azure Clean-Room Release Acceptance
+
+Sprint 10 validated ESP on a fresh Azure single-VM deployment before the
+v0.1.0 release.
+
+### Acceptance Environment
+
+The acceptance environment used:
+
+- Azure region: West Europe
+- Ubuntu 24.04 VM
+- Docker Engine 29.9.1
+- Docker Compose 5.6.0
+- ESP/iTop 3.3.0-21411
+- MariaDB 10.11
+- HTTPS through Nginx and Let's Encrypt
+- ESP web container bound only to `127.0.0.1:8080`
+
+The Azure deployment, application bootstrap, HTTPS configuration, persistent
+restart behavior, backup, and isolated restore were validated.
+
+### Acceptance Results
+
+The following release gates passed:
+
+- Azure infrastructure deployment succeeded.
+- ESP unattended installation completed successfully.
+- Production database contained 249 tables.
+- ESP extension compiled successfully.
+- HTTP redirected to HTTPS.
+- Public ESP UI returned HTTPS 200.
+- Let's Encrypt certificate was issued successfully.
+- Certbot renewal dry-run passed.
+- ESP and MariaDB remained healthy after VM restart.
+- Persistent configuration, database, data, and compiled environment survived
+  the restart.
+- Application-consistent Azure backup completed successfully.
+- All backup SHA-256 checksums passed.
+- Backup source returned healthy after backup.
+- Backup was restored into a separate disposable Compose project.
+- Restored database contained 249 tables.
+- Restored ESP configuration and extension were present.
+- Restored test endpoint returned HTTP 200.
+- Production containers remained healthy throughout restore testing.
+- Production public HTTPS remained HTTP 200 after restore testing.
+
+The accepted Azure backup was:
+
+    /opt/esp/backups/esp-backup-20261016T095316Z
+
+The backup contained:
+
+- `database.sql.gz`
+- `conf.tar.gz`
+- `data.tar.gz`
+- `env-production.tar.gz`
+- `manifest.txt`
+- `SHA256SUMS`
+
+### Engineering Issues and Resolutions — Sprint 10
+
+#### Reverse proxy redirected authentication to HTTPS port 80
+
+**Symptom**
+
+Authentication requests could redirect to a URL containing HTTPS with port 80.
+
+**Root cause**
+
+Nginx forwarded the protocol but did not explicitly provide the external HTTPS
+port to the application.
+
+**Resolution**
+
+Added:
+
+    proxy_set_header X-Forwarded-Port 443;
+
+to the HTTPS reverse-proxy configuration.
+
+**Validation**
+
+The corrected public HTTPS endpoint returned HTTP 200.
+
+#### ESP public URL required a trailing slash
+
+**Symptom**
+
+Generated resource URLs could concatenate the deployment environment name
+directly onto the FQDN, producing malformed asset URLs.
+
+**Root cause**
+
+The generated ESP public URL did not end with `/`.
+
+**Resolution**
+
+Deployment and HTTPS automation now generate:
+
+    https://<fqdn>/
+
+rather than:
+
+    https://<fqdn>
+
+**Validation**
+
+Application assets and the ESP UI returned successfully after correction.
+
+#### Nginx enabled-site backup created duplicate configuration
+
+**Symptom**
+
+Nginx reported duplicate listening configuration after a configuration backup.
+
+**Root cause**
+
+A backup symlink was created inside `sites-enabled`, causing Nginx to load both
+the active configuration and its backup.
+
+**Resolution**
+
+Removed the accidental enabled backup. Configuration backups must be stored
+outside `sites-enabled`, preferably from `sites-available` or another
+non-enabled location.
+
+#### Repository branding source drift
+
+**Symptom**
+
+The deployment repository did not contain all files used by the known-good ESP
+branding environment.
+
+**Root cause**
+
+The portal UI hook, ESP theme CSS, and current module wiring had not all been
+migrated into the Azure deployment repository.
+
+**Resolution**
+
+Migrated only the active production branding files from the known-good
+environment and verified them against known-good SHA-256 checksums.
+
+Unused image variants and development backup files were intentionally excluded.
+
+**Validation**
+
+PHP syntax validation passed using PHP 8.3. The updated ESP image built
+successfully and a disposable clean-room installation returned HTTP 200 with
+249 database tables and the ESP extension compiled.
+
+#### Backup script executed outside the application directory
+
+**Symptom**
+
+The acceptance command reported permission denied when attempting to change
+directory to `/opt/esp/app`.
+
+**Root cause**
+
+The Azure administration account does not have direct traversal permission for
+that protected application directory.
+
+**Resolution**
+
+No backup correction was required. The backup script operates against the
+specified Docker Compose project and an absolute backup destination and
+therefore did not depend on the attempted working-directory change.
+
+**Validation**
+
+The backup completed successfully, all generated artifacts passed checksum
+validation, and the production application returned HTTPS 200 afterward.
+
+#### Disposable restore target conflicted with production port 8080
+
+**Symptom**
+
+The disposable restore web container could not start because
+`127.0.0.1:8080` was already allocated by the production ESP container.
+
+**Root cause**
+
+The disposable Compose project inherited the production default
+`ESP_HTTP_PORT=8080`.
+
+**Resolution**
+
+Set the disposable restore target to:
+
+    ESP_HTTP_PORT=18091
+
+No production configuration was changed.
+
+**Validation**
+
+The disposable web container started successfully on
+`127.0.0.1:18091`, while the production web container remained healthy on
+`127.0.0.1:8080`.
+
+#### Restore isolation validation
+
+The Sprint 10 backup was restored into the separate Compose project:
+
+    esp-s10-restore-test
+
+The restore script validated the backup checksums, database identity,
+persistent mounts, Docker network, database alias, and helper image before
+crossing the destructive restore boundary.
+
+The restored environment contained 249 database tables, retained the ESP
+configuration and extension, and returned HTTP 200.
+
+The production `esp-db-1` and `esp-web-1` containers remained healthy and the
+public production endpoint continued returning HTTPS 200.
+
+### Planned Automated Backup Policy
+
+The current v0.1.0 acceptance proves the application-aware backup and restore
+mechanism. Backup scheduling and off-VM retention must not be assumed unless
+the corresponding automation has been deployed.
+
+The target production design is:
+
+- automatic backup enabled by default
+- daily application-aware backup
+- seven days of local backup retention
+- optional Azure Storage off-VM backup
+- 30-day default Azure Storage retention
+- private Blob container
+- Azure Managed Identity for upload authorization where supported
+- no Storage Account secret embedded in the repository or VM configuration
+- restore remains an explicit administrator operation
+
+Local-only backup must not be considered sufficient protection against complete
+VM or OS-disk loss.
+
+Azure VM-level backup may be added as an additional recovery layer, but it does
+not replace the application-aware ESP backup and restore mechanism.

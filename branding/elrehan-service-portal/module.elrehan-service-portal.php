@@ -12,13 +12,17 @@ SetupWebPage::AddModule(
     array(
         'label' => 'Elrehan Service Portal Branding',
         'category' => 'application',
-        'dependencies' => array(),
+        'dependencies' => array(
+            'itop-portal-base/3.0.0',
+        ),
         'mandatory' => false,
         'visible' => true,
 
         // XML datamodel files are discovered and compiled separately by iTop.
         // Only PHP runtime model files belong in this array.
-        'datamodel' => array(),
+        'datamodel' => array(
+            'src/Hook/PortalUIExtension.php',
+        ),
 
         'webservice' => array(),
         'data.struct' => array(),
