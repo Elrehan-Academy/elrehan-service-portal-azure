@@ -50,10 +50,6 @@ param sshPublicKey string = ''
 @description('Linux administrator password used when authenticationType is password.')
 param adminPassword string = ''
 
-@description('Azure Public IP DNS label used for the ESP HTTPS FQDN.')
-@minLength(3)
-param dnsLabel string
-
 @description('Email address used for Let\'s Encrypt certificate registration and renewal notices.')
 param certificateEmail string
 
@@ -89,6 +85,8 @@ param databasePassword string = ''
 @secure()
 @description('MariaDB root password used when databaseCredentialMode is custom.')
 param databaseRootPassword string = ''
+
+var dnsLabel = 'esp-${uniqueString(subscription().subscriptionId, resourceGroup().id, namePrefix)}'
 
 var bootstrapScript = loadTextContent('cloud-init/bootstrap.sh')
 var tags = {
