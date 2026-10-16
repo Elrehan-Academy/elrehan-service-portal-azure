@@ -13,8 +13,19 @@ param vmSize string = 'Standard_B2s'
 @description('Linux administrator username.')
 param adminUsername string = 'azureuser'
 
-@description('SSH public key used for VM administrator authentication.')
-param sshPublicKey string
+@description('Linux VM authentication method.')
+@allowed([
+  'sshPublicKey'
+  'password'
+])
+param authenticationType string = 'sshPublicKey'
+
+@description('SSH public key used when authenticationType is sshPublicKey.')
+param sshPublicKey string = ''
+
+@secure()
+@description('Linux administrator password used when authenticationType is password.')
+param adminPassword string = ''
 
 @description('Base64-encoded VM bootstrap script.')
 param customData string
@@ -94,17 +105,18 @@ resource vm 'Microsoft.Compute/virtualMachines@2024-07-01' = {
     osProfile: {
       computerName: vmName
       adminUsername: adminUsername
+      adminPassword: authenticationType == 'password' ? adminPassword : null
       customData: customData
       linuxConfiguration: {
-        disablePasswordAuthentication: true
-        ssh: {
+        disablePasswordAuthentication: authenticationType != 'password'
+        ssh: authenticationType == 'sshPublicKey' ? {
           publicKeys: [
             {
               path: '/home/${adminUsername}/.ssh/authorized_keys'
               keyData: sshPublicKey
             }
           ]
-        }
+        } : null
       }
     }
     networkProfile: {

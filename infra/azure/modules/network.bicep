@@ -5,10 +5,10 @@ param location string
 param namePrefix string
 
 @description('Virtual network address space.')
-param vnetAddressPrefix string = '10.20.0.0/16'
+param vnetAddressPrefix string = '10.20.0.0/24'
 
 @description('ESP application subnet address prefix.')
-param subnetAddressPrefix string = '10.20.1.0/24'
+param subnetAddressPrefix string = '10.20.0.0/28'
 
 @description('CIDR allowed to connect to SSH.')
 param sshSourceAddressPrefix string
