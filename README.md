@@ -31,11 +31,22 @@ The current development baseline provides:
 - security acceptance covering NSG exposure, protected runtime secrets, and
   private ESP backend access
 
-Sprint 9 HTTPS, certificate, and Azure security acceptance is complete on the
-current Azure test deployment.
+Sprint 10 clean-room end-to-end deployment and release acceptance is complete.
 
-The next stage is Sprint 10: clean-room end-to-end deployment and release
-acceptance.
+The v0.1.0 release baseline has been validated with:
+
+- fresh Azure infrastructure deployment
+- zero-touch ESP application installation
+- Elrehan Service Portal branding and Portal UI integration
+- persistent application and database state across Azure VM reboot
+- public HTTPS with Let's Encrypt and automatic certificate renewal
+- application-aware backup with checksum validation
+- isolated restore validation with 249 database tables recovered
+- production health validation after backup and restore testing
+
+This release establishes the validated deployment and operational baseline for
+the Elrehan Service Portal. The Azure Portal deployment experience and further
+backup automation are subsequent product enhancements.
 
 Detailed deployment, recovery, HTTPS, certificate, security, evidence, and
 engineering issue/resolution information is maintained in
