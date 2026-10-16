@@ -30,6 +30,10 @@ param adminPassword string = ''
 @description('Base64-encoded VM bootstrap script.')
 param customData string
 
+@secure()
+@description('Base64-encoded protected ESP deployment script executed by the Azure Custom Script Extension.')
+param protectedDeploymentScript string
+
 @description('Azure Public IP DNS label. Leave empty to omit DNS settings.')
 param dnsLabel string = ''
 
@@ -133,6 +137,22 @@ resource vm 'Microsoft.Compute/virtualMachines@2024-07-01' = {
       bootDiagnostics: {
         enabled: true
       }
+    }
+  }
+}
+
+resource espDeploymentExtension 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
+  parent: vm
+  name: 'esp-deployment'
+  location: location
+  tags: tags
+  properties: {
+    publisher: 'Microsoft.Azure.Extensions'
+    type: 'CustomScript'
+    typeHandlerVersion: '2.1'
+    autoUpgradeMinorVersion: true
+    protectedSettings: {
+      script: protectedDeploymentScript
     }
   }
 }

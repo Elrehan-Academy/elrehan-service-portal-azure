@@ -31,7 +31,8 @@ apt-get update
 apt-get install -y \
   ca-certificates \
   curl \
-  gnupg
+  gnupg \
+  openssl
 
 install -m 0755 -d /etc/apt/keyrings
 
@@ -76,6 +77,10 @@ compose=$(docker compose version)
 RUNTIME
 
 chmod 0644 "$ESP_ROOT/evidence/runtime.txt"
+
+# Sprint 11 inserts the non-secret ESP installer here. Host bootstrap must
+# not report ready until the installer has been installed successfully.
+# __ESP_INSTALLER_PAYLOAD__
 
 write_status ready
 
