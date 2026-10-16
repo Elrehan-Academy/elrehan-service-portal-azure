@@ -24,8 +24,11 @@ param subnetAddressPrefix string = '10.20.0.0/28'
 @description('Existing subnet resource ID used when networkMode is existing.')
 param existingSubnetResourceId string = ''
 
-@description('CIDR allowed to connect to SSH, for example 203.0.113.10/32.')
-param sshSourceAddressPrefix string
+@description('Whether inbound SSH access is enabled when creating a new ESP VNet.')
+param sshAccessEnabled bool = true
+
+@description('CIDR allowed to connect to SSH when SSH access is enabled, for example 203.0.113.10/32.')
+param sshSourceAddressPrefix string = '127.0.0.1/32'
 
 @description('Azure VM size.')
 param vmSize string = 'Standard_B2s'
@@ -47,8 +50,9 @@ param sshPublicKey string = ''
 @description('Linux administrator password used when authenticationType is password.')
 param adminPassword string = ''
 
-@description('Azure Public IP DNS label. Leave empty to disable the Azure-provided FQDN.')
-param dnsLabel string = ''
+@description('Azure Public IP DNS label used for the ESP HTTPS FQDN.')
+@minLength(3)
+param dnsLabel string
 
 @description('Email address used for Let\'s Encrypt certificate registration and renewal notices.')
 param certificateEmail string
@@ -170,6 +174,7 @@ module network 'modules/network.bicep' = if (networkMode == 'new') {
     namePrefix: namePrefix
     vnetAddressPrefix: vnetAddressPrefix
     subnetAddressPrefix: subnetAddressPrefix
+    sshAccessEnabled: sshAccessEnabled
     sshSourceAddressPrefix: sshSourceAddressPrefix
     tags: tags
   }

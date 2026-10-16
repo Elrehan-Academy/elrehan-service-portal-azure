@@ -10,8 +10,11 @@ param vnetAddressPrefix string = '10.20.0.0/24'
 @description('ESP application subnet address prefix.')
 param subnetAddressPrefix string = '10.20.0.0/28'
 
-@description('CIDR allowed to connect to SSH.')
-param sshSourceAddressPrefix string
+@description('Whether inbound SSH access is enabled.')
+param sshAccessEnabled bool = true
+
+@description('CIDR allowed to connect to SSH when SSH access is enabled.')
+param sshSourceAddressPrefix string = '127.0.0.1/32'
 
 @description('Tags applied to Azure resources.')
 param tags object = {}
@@ -25,47 +28,51 @@ resource nsg 'Microsoft.Network/networkSecurityGroups@2024-05-01' = {
   location: location
   tags: tags
   properties: {
-    securityRules: [
-      {
-        name: 'Allow-SSH'
-        properties: {
-          priority: 100
-          access: 'Allow'
-          direction: 'Inbound'
-          protocol: 'Tcp'
-          sourcePortRange: '*'
-          destinationPortRange: '22'
-          sourceAddressPrefix: sshSourceAddressPrefix
-          destinationAddressPrefix: '*'
+    securityRules: concat(
+      sshAccessEnabled ? [
+        {
+          name: 'Allow-SSH'
+          properties: {
+            priority: 100
+            access: 'Allow'
+            direction: 'Inbound'
+            protocol: 'Tcp'
+            sourcePortRange: '*'
+            destinationPortRange: '22'
+            sourceAddressPrefix: sshSourceAddressPrefix
+            destinationAddressPrefix: '*'
+          }
         }
-      }
-      {
-        name: 'Allow-HTTP'
-        properties: {
-          priority: 110
-          access: 'Allow'
-          direction: 'Inbound'
-          protocol: 'Tcp'
-          sourcePortRange: '*'
-          destinationPortRange: '80'
-          sourceAddressPrefix: '*'
-          destinationAddressPrefix: '*'
+      ] : [],
+      [
+        {
+          name: 'Allow-HTTP'
+          properties: {
+            priority: 110
+            access: 'Allow'
+            direction: 'Inbound'
+            protocol: 'Tcp'
+            sourcePortRange: '*'
+            destinationPortRange: '80'
+            sourceAddressPrefix: '*'
+            destinationAddressPrefix: '*'
+          }
         }
-      }
-      {
-        name: 'Allow-HTTPS'
-        properties: {
-          priority: 120
-          access: 'Allow'
-          direction: 'Inbound'
-          protocol: 'Tcp'
-          sourcePortRange: '*'
-          destinationPortRange: '443'
-          sourceAddressPrefix: '*'
-          destinationAddressPrefix: '*'
+        {
+          name: 'Allow-HTTPS'
+          properties: {
+            priority: 120
+            access: 'Allow'
+            direction: 'Inbound'
+            protocol: 'Tcp'
+            sourcePortRange: '*'
+            destinationPortRange: '443'
+            sourceAddressPrefix: '*'
+            destinationAddressPrefix: '*'
+          }
         }
-      }
-    ]
+      ]
+    )
   }
 }
 
