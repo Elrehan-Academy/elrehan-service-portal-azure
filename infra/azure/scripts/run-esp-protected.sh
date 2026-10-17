@@ -9,10 +9,23 @@ if [ "$(id -u)" -ne 0 ]; then
     exit 1
 fi
 
-if [ ! -x "$INSTALLER" ]; then
-    echo 'FAIL: ESP installer is not available or executable' >&2
-    exit 1
-fi
+echo 'Waiting for ESP installer to become available...'
+
+attempt=1
+while [ "$attempt" -le 120 ]; do
+    if [ -x "$INSTALLER" ]; then
+        echo 'PASS: ESP installer is available'
+        break
+    fi
+
+    if [ "$attempt" -eq 120 ]; then
+        echo 'FAIL: ESP installer did not become available within 20 minutes' >&2
+        exit 1
+    fi
+
+    sleep 10
+    attempt=$((attempt + 1))
+done
 
 decode() {
     printf '%s' "$1" | base64 --decode
