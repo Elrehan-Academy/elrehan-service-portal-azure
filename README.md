@@ -11,9 +11,9 @@ The project focuses on two practical learning goals:
 
 > **Current status:** Public Academy preview. The Deploy to Azure experience is being validated through clean-room acceptance before the v1 public release.
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#view/Microsoft_Azure_CreateUIDef/CustomDeploymentBlade/uri/https%3A%2F%2Fraw.githubusercontent.com%2FElrehan-Academy%2Felrehan-service-portal-azure%2Ffeature%2Fsprint11-deploy-to-azure%2Fportal%2FmainTemplate.json/uiFormDefinitionUri/https%3A%2F%2Fraw.githubusercontent.com%2FElrehan-Academy%2Felrehan-service-portal-azure%2Ffeature%2Fsprint11-deploy-to-azure%2Fportal%2FcreateUiDefinition.json)
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#view/Microsoft_Azure_CreateUIDef/CustomDeploymentBlade/uri/https%3A%2F%2Fraw.githubusercontent.com%2FElrehan-Academy%2Felrehan-service-portal-azure%2Ffeature%2Fsprint11-deploy-to-azure%2Fportal%2FmainTemplate.json/uiFormDefinitionUri/https%3A%2F%2Fraw.githubusercontent.com%2FElrehan-Academy%2Felrehan-service-portal-azure%2Ffeature%2Fsprint11-deploy-to-azure%2Fportal%2FuiFormDefinition.json)
 
-The button launches the ESP Azure deployment wizard. Azure charges may apply for resources created in your subscription.
+The button launches the branded **Elrehan Academy — ESP Academy Edition** Azure deployment wizard. Azure charges may apply for resources created in your subscription.
 
 ## What students can learn
 
@@ -103,6 +103,8 @@ The deployment then automates:
 - Let's Encrypt HTTPS certificate issuance
 - certificate-renewal automation
 - application and database health validation
+
+Academy-created Azure resources are automatically tagged with `application=Elrehan Service Portal`, `project=ESP`, and `managedBy=Bicep`.
 
 ## Current architecture
 
