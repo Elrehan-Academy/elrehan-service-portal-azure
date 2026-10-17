@@ -1,80 +1,82 @@
 # Elrehan Service Portal (ESP) — Academy Edition
 
-**Learn cloud automation, IT service management, business process design, ticketing, CMDB, security, and operations by building and running a real service portal on Azure.**
+**Learn ITIL-style service management and customer self-service automation by running a real service portal on Azure.**
 
-ESP Academy Edition is a hands-on learning platform from **Elrehan Academy**. It combines Azure infrastructure automation with a branded iTop Community service-management platform so students can see how cloud engineering and IT business processes connect in a working environment.
+ESP Academy Edition is a hands-on learning environment from **Elrehan Academy**, built on iTop Community and Azure automation.
 
-> **Current status:** Public Academy preview. The automated Azure deployment experience is undergoing clean-room acceptance before the v1 public release.
+The project focuses on two practical learning goals:
+
+1. **ITIL-related service management using iTop** — requests, incidents, changes, configuration items, CMDB relationships, assignments, status flows, and service operations.
+2. **Cloud and network automation from a customer self-service portal** — showing how an approved request can become an automated infrastructure or network action.
+
+> **Current status:** Public Academy preview. The Deploy to Azure experience is being validated through clean-room acceptance before the v1 public release.
 
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#view/Microsoft_Azure_CreateUIDef/CustomDeploymentBlade/uri/https%3A%2F%2Fraw.githubusercontent.com%2FElrehan-Academy%2Felrehan-service-portal-azure%2Ffeature%2Fsprint11-deploy-to-azure%2Fportal%2FmainTemplate.json/uiFormDefinitionUri/https%3A%2F%2Fraw.githubusercontent.com%2FElrehan-Academy%2Felrehan-service-portal-azure%2Ffeature%2Fsprint11-deploy-to-azure%2Fportal%2FcreateUiDefinition.json)
 
-The button launches the branded Azure deployment wizard. Azure charges may apply for resources created in your subscription.
-
-## Why this project exists
-
-Cloud engineers do more than create virtual machines. In a real organization, infrastructure exists to support **services, users, applications, configuration items, requests, incidents, changes, approvals, and operational processes**.
-
-ESP is designed as a teaching environment where students can move through that complete story:
-
-**Business need → service request → ticket → approval/process → infrastructure automation → deployed service → CMDB/operations → validation and recovery**
-
-Instead of learning each topic in isolation, students can observe how the pieces fit together.
+The button launches the ESP Azure deployment wizard. Azure charges may apply for resources created in your subscription.
 
 ## What students can learn
 
-| Learning area | What ESP demonstrates |
-| --- | --- |
-| **Azure automation** | Deploy repeatable infrastructure with Bicep/ARM and a guided Azure Portal experience. |
-| **Zero-touch deployment** | Bootstrap a VM and install the application automatically without laptop-side SSH installation steps. |
-| **ITSM & ticketing** | Explore how service requests, incidents, changes, assignments, status transitions, and support workflows are represented in a service-management platform. |
-| **Business processes** | Understand how technical automation can support request fulfilment, approvals, operational ownership, and service lifecycle processes. |
-| **CMDB** | Work with configuration items and relationships so infrastructure is connected to the services it supports. |
-| **Security** | Learn secure parameter handling, limited network exposure, HTTPS, certificate automation, and private application backends. |
-| **Containers** | Run ESP and MariaDB with Docker Compose and persistent application/database state. |
-| **Operations** | Validate health, reboot recovery, backup, restore, certificates, and application availability. |
-| **Evidence-first engineering** | Prove that a deployment works with repeatable validation instead of assuming that provisioning success means application success. |
+### 1. ITIL-style service management in iTop
 
-## Learning journey
+ESP gives students a real service-management platform to explore familiar operational concepts such as:
 
-ESP can be used as a practical lab platform for an Elrehan Academy learning path:
+- customer and user requests
+- incidents and support tickets
+- changes and implementation tracking
+- assignment to teams or engineers
+- ticket states and lifecycle transitions
+- services and service ownership
+- configuration items
+- CMDB relationships between applications, servers, network components, and services
+- operational history and traceability
 
-1. **Understand the service** — identify the users, business need, service, support team, and expected outcome.
-2. **Explore ITSM** — create and follow tickets such as requests and incidents and understand ownership and lifecycle states.
-3. **Model the environment** — learn how servers, applications, services, and dependencies belong in a CMDB.
-4. **Automate the infrastructure** — deploy the Azure environment through Infrastructure as Code rather than manual portal configuration.
-5. **Automate the application** — observe zero-touch installation, generated configuration, containers, and database initialization.
-6. **Secure the service** — apply controlled SSH exposure, HTTPS, Let's Encrypt certificates, and private backend access.
-7. **Validate the result** — confirm DNS, application health, database health, branding, HTTPS, and deployment outputs.
-8. **Operate the service** — perform backup, restore, reboot, certificate-renewal, and recovery exercises.
-9. **Connect technology to process** — understand how automation can eventually be triggered by approved service requests and business workflows.
+The goal is to understand how IT service-management processes are represented in a working tool rather than only as theory.
 
-The goal is not simply to deploy iTop. The goal is to help students understand the relationship between **cloud engineering, automation, service management, CMDB data, security, and business operations**.
+### 2. Customer self-service for cloud and network automation
 
-## What gets deployed
+The second learning goal is to connect service management with automation.
+
+A typical learning pattern is:
+
+**Customer request → service portal → validation / approval → automation workflow → cloud or network change → result recorded back in the service process**
+
+Examples that can be built on top of ESP include:
+
+- request a new Azure lab environment
+- request a new VNet or subnet
+- request a network security rule
+- request a VM or application environment
+- request access to an existing environment
+- request a DNS or connectivity change
+- trigger approved Infrastructure as Code deployment
+- update the related CMDB record after deployment
+- attach deployment evidence or status to the originating request
+
+The current repository provides the Azure deployment foundation and service-management platform needed for these labs. Individual catalog-to-automation workflows can then be added progressively as training exercises.
+
+## How the two areas connect
 
 ```mermaid
 flowchart LR
-    U[Student / Engineer] -->|Deploy to Azure| P[Azure Portal Wizard]
-    P --> ARM[ARM / Bicep Deployment]
-    ARM --> VNET[Virtual Network + NSG]
-    ARM --> VM[Ubuntu VM]
-    ARM --> DNS[Azure Public DNS Label]
-    VM --> BOOT[Zero-touch Bootstrap]
-    BOOT --> ART[Immutable ESP Release Artifact]
-    ART --> DOCKER[Docker Compose]
-    DOCKER --> ESP[Elrehan Service Portal]
-    DOCKER --> DB[MariaDB]
-    VM --> NGINX[Nginx + HTTPS]
-    NGINX --> ESP
-    ESP --> ITSM[Ticketing & Business Processes]
-    ESP --> CMDB[CMDB & Configuration Relationships]
+    USER[Customer / Student] --> PORTAL[ESP Self-Service Portal]
+    PORTAL --> TICKET[Request / Incident / Change]
+    TICKET --> PROCESS[Validation / Approval / Assignment]
+    PROCESS --> AUTO[Automation Workflow]
+    AUTO --> CLOUD[Azure Cloud Resources]
+    AUTO --> NET[Network Changes]
+    CLOUD --> CMDB[CMDB / Configuration Items]
+    NET --> CMDB
+    CMDB --> TICKET
 ```
 
-The current Academy Edition uses a **single Azure VM** architecture intentionally. It is designed for learning, labs, demos, and POCs rather than high-availability enterprise production workloads.
+This allows students to see the full relationship between **service management and technical automation**.
 
-## Automated Azure deployment
+## Deploy ESP to Azure
 
-The Academy deployment experience asks for only the information a learner needs:
+The Academy deployment experience is designed to be simple enough for labs while still exposing useful infrastructure choices.
+
+Students select:
 
 - Azure subscription, resource group, and region
 - resource-name prefix
@@ -86,91 +88,114 @@ The Academy deployment experience asks for only the information a learner needs:
 - certificate email
 - ESP administrator credentials
 
-The deployment handles the remaining implementation details automatically, including:
+The deployment then automates:
 
-- unique Azure DNS label generation
-- Azure VM/network provisioning
+- Azure VM and networking deployment
+- generated Azure DNS name
 - protected runtime secret delivery
-- immutable ESP artifact download and SHA256 verification
+- immutable ESP artifact download
+- SHA256 artifact validation
 - Docker and Docker Compose installation
 - ESP and MariaDB deployment
-- unattended ESP initialization
+- unattended ESP installation
 - Elrehan Service Portal branding
 - Nginx reverse proxy
 - Let's Encrypt HTTPS certificate issuance
 - certificate-renewal automation
 - application and database health validation
 
-## Architecture principles
+## Current architecture
 
-ESP Academy Edition follows a few important engineering principles:
+```mermaid
+flowchart LR
+    U[Student / Engineer] -->|Deploy to Azure| P[Azure Portal Wizard]
+    P --> ARM[ARM / Bicep]
+    ARM --> VNET[Virtual Network + NSG]
+    ARM --> VM[Ubuntu VM]
+    ARM --> DNS[Azure DNS Label]
+    VM --> BOOT[Zero-touch Bootstrap]
+    BOOT --> ART[Verified ESP Artifact]
+    ART --> DOCKER[Docker Compose]
+    DOCKER --> ESP[Elrehan Service Portal / iTop]
+    DOCKER --> DB[MariaDB]
+    VM --> NGINX[Nginx + HTTPS]
+    NGINX --> ESP
+```
 
-- **Infrastructure as Code** — the environment should be reproducible.
-- **Zero-touch installation** — deployment should not depend on manual SSH configuration.
-- **Secure defaults** — secrets use secure Azure parameters and the ESP application listens privately on `127.0.0.1:8080` behind Nginx.
-- **Immutable release artifact** — the deployment downloads a pinned release artifact and verifies its SHA256 before installation.
-- **Evidence before acceptance** — infrastructure, application, database, HTTPS, certificate, and recovery behavior are validated.
-- **Learn the complete system** — automation is taught together with the business process and operational context it supports.
+The Academy Edition intentionally uses a **single Azure VM**. It is intended for education, labs, demos, and POCs rather than high-availability enterprise production workloads.
+
+## Learning path
+
+A practical ESP lab sequence can be:
+
+1. Deploy ESP automatically to Azure.
+2. Log in to the service portal and explore iTop objects and ticket workflows.
+3. Create services, configuration items, and CMDB relationships.
+4. Create requests, incidents, and changes and follow their lifecycle.
+5. Build a simple customer catalog item for a cloud or network request.
+6. Connect that request to an automation script, pipeline, or Infrastructure as Code workflow.
+7. Return deployment status or evidence to the service-management process.
+8. Update the CMDB when infrastructure is created or changed.
+9. Practice backup, restore, reboot recovery, HTTPS, and operational validation.
+
+This keeps the training focused on two skills that are commonly used together in real environments: **IT service management** and **infrastructure automation**.
 
 ## Current validated baseline
 
-The project has already validated the following capabilities during earlier release acceptance:
+The project has already validated:
 
 - iTop Community 3.3.0-21411 based ESP image
-- Elrehan Service Portal branding and Portal UI integration
+- Elrehan Service Portal branding
 - unattended installation
-- persistent Docker Compose application and MariaDB 10.11
+- persistent Docker Compose deployment
+- MariaDB 10.11
 - Azure infrastructure automation with Bicep
 - public Azure-generated FQDN
 - Nginx TLS termination
-- Let's Encrypt certificate issuance and renewal automation
+- Let's Encrypt certificate issuance
+- automatic certificate renewal
 - HTTP-to-HTTPS redirect
 - private ESP backend access
 - Azure VM reboot recovery
 - application-aware backup and restore
 - database recovery validation
 
-The current Sprint 11 work adds the simplified public **Deploy to Azure** experience and performs a new clean-room acceptance using the same path intended for Academy users.
+The current Sprint 11 work adds the simplified public **Deploy to Azure** experience and clean-room validation using the same path intended for Academy users.
 
 ## Repository structure
 
 ```text
 branding/          Elrehan Service Portal branding and extension assets
 infra/             Azure infrastructure and zero-touch deployment automation
-portal/            Azure Portal deployment template and branded UI definition
+portal/            Azure Portal deployment template and UI definition
 scripts/           deployment, backup, restore, HTTPS, and lifecycle automation
 tests/             validation and acceptance tests
 docs/              operational and engineering documentation
 .github/workflows/ CI validation
 ```
 
-## Operations and evidence
+## Operations
 
-For lifecycle operations, backup, restore, recovery, HTTPS, certificate handling, security guidance, and engineering evidence, see the [ESP Operations Runbook](docs/operations.md).
-
-## Academy use
-
-This repository is published primarily for **education, labs, demonstrations, experimentation, and POCs**. Students are encouraged to inspect the automation rather than treating the Deploy to Azure button as a black box.
-
-A useful exercise is to deploy ESP, inspect the generated Azure resources, trace how the bootstrap reaches the application installer, explore the service portal and CMDB, then destroy the lab and reproduce it again from code.
+For lifecycle operations, backup, restore, HTTPS, certificate handling, security guidance, and engineering evidence, see the [ESP Operations Runbook](docs/operations.md).
 
 ## Cost and cleanup
 
-Deploying ESP creates billable Azure resources such as a virtual machine, disk, and public IP. Costs depend on the selected Azure region and VM size.
+Deploying ESP creates billable Azure resources such as a virtual machine, managed disk, and public IP. Costs depend on Azure region and VM size.
 
-For training environments, use a dedicated disposable resource group and delete it when the lab is complete.
+For training, use a disposable resource group and delete it when the lab is complete.
 
 ## Project direction
 
-The Academy Edition is the first step. Future learning and product work can extend the same foundation toward:
+Future Academy exercises can extend the same platform with:
 
-- service-catalog driven automation
+- service catalog items for cloud and network requests
 - approval-to-deployment workflows
-- richer observability and reporting
-- automated ticket-to-infrastructure processes
-- deeper CMDB synchronization
-- enterprise and highly available deployment models
+- Azure DevOps or GitHub Actions integration
+- API-driven network automation
+- CMDB updates from automation
+- deployment status written back to tickets
+- richer reporting and observability
 
 ---
 
-**Elrehan Academy** — learn by building, automating, validating, and operating real systems.
+**Elrehan Academy** — learn IT service management and automation by building real workflows.
