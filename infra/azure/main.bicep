@@ -53,13 +53,10 @@ param adminPassword string = ''
 @description('Email address used for Let\'s Encrypt certificate registration and renewal notices.')
 param certificateEmail string
 
-@description('Immutable ESP deployment artifact URL. The artifact must match the supplied SHA256 digest.')
-param espArtifactUrl string
-
-@description('Expected lowercase SHA256 digest of the ESP deployment artifact.')
-@minLength(64)
-@maxLength(64)
-param espArtifactSha256 string
+// Academy Edition release artifact.
+// Pinned internally so Azure deployments always consume the validated immutable release.
+var espArtifactUrl = 'https://stelrehanart2058fd0e.blob.${environment().suffixes.storage}/releases/esp/academy/v0.1.0/esp-deployment-v0.1.0.tar.gz'
+var espArtifactSha256 = 'd75d8bf7d6764146586ab4f8eb537b40c6f5e8f61225e7f62afe512d78d99389'
 
 @description('ESP web administrator username.')
 param espAdminUsername string = 'admin'
