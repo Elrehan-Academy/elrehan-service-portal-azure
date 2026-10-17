@@ -29,7 +29,10 @@
       {
         "name": "vmConfiguration",
         "label": "Virtual machine",
-        "subLabel": "Configure the ESP host and administrator access.",
+        "subLabel": {
+          "preValidation": "Configure the ESP host and administrator access.",
+          "postValidation": "Virtual machine configuration complete"
+        },
         "elements": [
           {
             "name": "vmSize",
@@ -115,7 +118,10 @@
       {
         "name": "networkConfiguration",
         "label": "Networking",
-        "subLabel": "Choose the network and SSH exposure for the ESP host.",
+        "subLabel": {
+          "preValidation": "Choose the network and SSH exposure for the ESP host.",
+          "postValidation": "Networking configuration complete"
+        },
         "elements": [
           {
             "name": "sshAccessMode",
@@ -222,7 +228,10 @@
       {
         "name": "espConfiguration",
         "label": "ESP Academy",
-        "subLabel": "Configure the portal administrator and certificate registration.",
+        "subLabel": {
+          "preValidation": "Configure the portal administrator and certificate registration.",
+          "postValidation": "ESP Academy configuration complete"
+        },
         "elements": [
           {
             "name": "certificateEmail",
