@@ -1,0 +1,285 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/0.1.2-preview/CreateUIDefinition.MultiVm.json#",
+  "handler": "Microsoft.Azure.CreateUIDef",
+  "version": "0.1.2-preview",
+  "parameters": {
+    "config": {
+      "isWizard": true,
+      "basics": {
+        "location": {
+          "visible": true
+        }
+      }
+    },
+    "basics": [
+      {
+        "name": "namePrefix",
+        "type": "Microsoft.Common.TextBox",
+        "label": "Resource name prefix",
+        "toolTip": "A short prefix used in ESP resource names.",
+        "constraints": {
+          "required": true,
+          "regex": "^[a-z0-9-]{3,40}$",
+          "validationMessage": "Use 3-40 lowercase letters, numbers, or hyphens."
+        },
+        "defaultValue": "esp"
+      }
+    ],
+    "steps": [
+      {
+        "name": "vmConfiguration",
+        "label": "Virtual machine",
+        "subLabel": "Configure the ESP host and administrator access.",
+        "elements": [
+          {
+            "name": "vmSize",
+            "type": "Microsoft.Common.DropDown",
+            "label": "VM size",
+            "defaultValue": "Standard_B2s",
+            "constraints": {
+              "required": true,
+              "allowedValues": [
+                {
+                  "label": "Standard B2s (recommended)",
+                  "value": "Standard_B2s"
+                },
+                {
+                  "label": "Standard B2ms",
+                  "value": "Standard_B2ms"
+                },
+                {
+                  "label": "Standard D2s v5",
+                  "value": "Standard_D2s_v5"
+                },
+                {
+                  "label": "Standard D4s v5",
+                  "value": "Standard_D4s_v5"
+                }
+              ]
+            }
+          },
+          {
+            "name": "adminUsername",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Linux administrator username",
+            "constraints": {
+              "required": true,
+              "regex": "^[a-z_][a-z0-9_-]{0,31}$",
+              "validationMessage": "Use a valid Linux username (up to 32 lowercase characters)."
+            },
+            "defaultValue": "azureuser"
+          },
+          {
+            "name": "authenticationType",
+            "type": "Microsoft.Common.OptionsGroup",
+            "label": "VM authentication",
+            "defaultValue": "sshPublicKey",
+            "constraints": {
+              "allowedValues": [
+                {
+                  "label": "SSH public key (recommended)",
+                  "value": "sshPublicKey"
+                },
+                {
+                  "label": "Password",
+                  "value": "password"
+                }
+              ]
+            }
+          },
+          {
+            "name": "sshPublicKey",
+            "type": "Microsoft.Common.TextBox",
+            "label": "SSH public key",
+            "toolTip": "Paste the complete SSH public key for the Linux administrator.",
+            "visible": "[equals(steps('vmConfiguration').authenticationType, 'sshPublicKey')]",
+            "constraints": {
+              "required": true,
+              "regex": "^(ssh-(rsa|ed25519|dss)|ecdsa-sha2-nistp256|ecdsa-sha2-nistp384|ecdsa-sha2-nistp521) [A-Za-z0-9+/]+={0,2}( .*)?$",
+              "validationMessage": "Enter a valid OpenSSH public key."
+            }
+          },
+          {
+            "name": "adminPassword",
+            "type": "Microsoft.Common.PasswordBox",
+            "label": "Linux administrator password",
+            "visible": "[equals(steps('vmConfiguration').authenticationType, 'password')]",
+            "constraints": {
+              "required": true,
+              "regex": "^(?=.*[A-Za-z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{12,72}$",
+              "validationMessage": "Use 12-72 characters with letters, numbers, and a symbol."
+            }
+          }
+        ]
+      },
+      {
+        "name": "networkConfiguration",
+        "label": "Networking",
+        "subLabel": "Choose the network and SSH exposure for the ESP host.",
+        "elements": [
+          {
+            "name": "sshAccessMode",
+            "type": "Microsoft.Common.OptionsGroup",
+            "label": "SSH access mode",
+            "toolTip": "My IP requires you to enter your current public IPv4 address because CreateUiDefinition cannot reliably detect it automatically.",
+            "defaultValue": "myIp",
+            "constraints": {
+              "allowedValues": [
+                {
+                  "label": "My IP (enter IPv4 below)",
+                  "value": "myIp"
+                },
+                {
+                  "label": "Custom CIDR",
+                  "value": "custom"
+                },
+                {
+                  "label": "Disabled",
+                  "value": "disabled"
+                }
+              ]
+            }
+          },
+          {
+            "name": "myIpAddress",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Your public IPv4 address",
+            "toolTip": "Enter the public IPv4 address that will connect to SSH. The deployment will append /32.",
+            "visible": "[equals(steps('networkConfiguration').sshAccessMode, 'myIp')]",
+            "constraints": {
+              "required": true,
+              "regex": "^(?:(?:25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})\\.){3}(?:25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})$",
+              "validationMessage": "Enter a public IPv4 address, without /32."
+            }
+          },
+          {
+            "name": "customSshSourceAddressPrefix",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Custom SSH source CIDR",
+            "toolTip": "For example, 203.0.113.10/32 or 203.0.113.0/24.",
+            "visible": "[equals(steps('networkConfiguration').sshAccessMode, 'custom')]",
+            "constraints": {
+              "required": true,
+              "regex": "^(?:(?:25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})\\.){3}(?:25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})\\/(?:3[0-2]|[12]?[0-9])$",
+              "validationMessage": "Enter an IPv4 CIDR such as 203.0.113.10/32."
+            }
+          },
+          {
+            "name": "networkMode",
+            "type": "Microsoft.Common.OptionsGroup",
+            "label": "Network mode",
+            "defaultValue": "new",
+            "constraints": {
+              "allowedValues": [
+                {
+                  "label": "New VNet",
+                  "value": "new"
+                },
+                {
+                  "label": "Existing subnet",
+                  "value": "existing"
+                }
+              ]
+            }
+          },
+          {
+            "name": "vnetAddressPrefix",
+            "type": "Microsoft.Common.TextBox",
+            "label": "VNet address prefix",
+            "visible": "[equals(steps('networkConfiguration').networkMode, 'new')]",
+            "constraints": {
+              "required": true,
+              "regex": "^(?:(?:25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})\\.){3}(?:25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})\\/(?:[0-9]|[12][0-9]|3[0-2])$",
+              "validationMessage": "Enter an IPv4 address prefix such as 10.20.0.0/24."
+            },
+            "defaultValue": "10.20.0.0/24"
+          },
+          {
+            "name": "subnetAddressPrefix",
+            "type": "Microsoft.Common.TextBox",
+            "label": "ESP subnet address prefix",
+            "visible": "[equals(steps('networkConfiguration').networkMode, 'new')]",
+            "constraints": {
+              "required": true,
+              "regex": "^(?:(?:25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})\\.){3}(?:25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})\\/(?:[0-9]|[12][0-9]|3[0-2])$",
+              "validationMessage": "Enter an IPv4 address prefix such as 10.20.0.0/28."
+            },
+            "defaultValue": "10.20.0.0/28"
+          },
+          {
+            "name": "existingSubnetResourceId",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Existing subnet resource ID",
+            "visible": "[equals(steps('networkConfiguration').networkMode, 'existing')]",
+            "constraints": {
+              "required": true,
+              "regex": "^/subscriptions/[^/]+/resourceGroups/[^/]+/providers/Microsoft\\.Network/virtualNetworks/[^/]+/subnets/[^/]+$",
+              "validationMessage": "Enter a full Azure subnet resource ID."
+            }
+          }
+        ]
+      },
+      {
+        "name": "espConfiguration",
+        "label": "ESP Academy",
+        "subLabel": "Configure the portal administrator and certificate registration.",
+        "elements": [
+          {
+            "name": "certificateEmail",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Certificate email",
+            "toolTip": "Used for Let's Encrypt certificate registration and renewal notices.",
+            "constraints": {
+              "required": true,
+              "regex": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
+              "validationMessage": "Enter a valid email address."
+            }
+          },
+          {
+            "name": "espAdminUsername",
+            "type": "Microsoft.Common.TextBox",
+            "label": "ESP administrator username",
+            "constraints": {
+              "required": true,
+              "regex": "^[A-Za-z0-9][A-Za-z0-9._-]{2,31}$",
+              "validationMessage": "Use 3-32 letters, numbers, dots, underscores, or hyphens."
+            },
+            "defaultValue": "admin"
+          },
+          {
+            "name": "espAdminPassword",
+            "type": "Microsoft.Common.PasswordBox",
+            "label": "ESP administrator password",
+            "constraints": {
+              "required": true,
+              "regex": "^(?=.*[A-Za-z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{12,72}$",
+              "validationMessage": "Use 12-72 characters with letters, numbers, and a symbol."
+            }
+          }
+        ]
+      }
+    ],
+    "outputs": {
+      "location": "[location()]",
+      "namePrefix": "[basics('namePrefix')]",
+      "networkMode": "[steps('networkConfiguration').networkMode]",
+      "vnetAddressPrefix": "[steps('networkConfiguration').vnetAddressPrefix]",
+      "subnetAddressPrefix": "[steps('networkConfiguration').subnetAddressPrefix]",
+      "existingSubnetResourceId": "[steps('networkConfiguration').existingSubnetResourceId]",
+      "sshAccessEnabled": "[not(equals(steps('networkConfiguration').sshAccessMode, 'disabled'))]",
+      "sshSourceAddressPrefix": "[if(equals(steps('networkConfiguration').sshAccessMode, 'myIp'), concat(steps('networkConfiguration').myIpAddress, '/32'), if(equals(steps('networkConfiguration').sshAccessMode, 'custom'), steps('networkConfiguration').customSshSourceAddressPrefix, '127.0.0.1/32'))]",
+      "vmSize": "[steps('vmConfiguration').vmSize]",
+      "adminUsername": "[steps('vmConfiguration').adminUsername]",
+      "authenticationType": "[steps('vmConfiguration').authenticationType]",
+      "sshPublicKey": "[steps('vmConfiguration').sshPublicKey]",
+      "adminPassword": "[steps('vmConfiguration').adminPassword]",
+      "certificateEmail": "[steps('espConfiguration').certificateEmail]",
+      "espAdminUsername": "[steps('espConfiguration').espAdminUsername]",
+      "espAdminPassword": "[steps('espConfiguration').espAdminPassword]",
+      "databaseCredentialMode": "generated",
+      "databaseUsername": "itop",
+      "databasePassword": "",
+      "databaseRootPassword": ""
+    }
+  }
+}
