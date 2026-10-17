@@ -1,0 +1,357 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2021-09-09/uiFormDefinition.schema.json#",
+  "view": {
+    "kind": "Form",
+    "properties": {
+      "title": "Elrehan Academy — ESP Academy Edition",
+      "steps": [
+        {
+          "name": "basics",
+          "label": "Basics",
+          "elements": [
+            {
+              "name": "solutionIntroduction",
+              "type": "Microsoft.Common.InfoBox",
+              "visible": true,
+              "options": {
+                "icon": "Info",
+                "text": "Elrehan Academy learning deployment. ESP Academy Edition combines iTop-based IT service management with Azure cloud and network automation labs. This deployment creates billable Azure resources in your subscription."
+              }
+            },
+            {
+              "name": "resourceScope",
+              "type": "Microsoft.Common.ResourceScope",
+              "location": {
+                "resourceTypes": [
+                  "microsoft.resources/resourcegroups"
+                ]
+              }
+            },
+            {
+              "name": "namePrefix",
+              "type": "Microsoft.Common.TextBox",
+              "label": "Resource name prefix",
+              "toolTip": "Short lowercase prefix used for ESP Azure resource names.",
+              "visible": true,
+              "constraints": {
+                "required": true,
+                "regex": "^[a-z0-9-]{3,40}$",
+                "validationMessage": "Use 3-40 lowercase letters, numbers, or hyphens."
+              },
+              "defaultValue": "esp"
+            }
+          ]
+        },
+        {
+          "name": "vm",
+          "label": "Virtual machine",
+          "elements": [
+            {
+              "name": "vmSize",
+              "type": "Microsoft.Common.DropDown",
+              "label": "VM size",
+              "toolTip": "Standard B2s is the recommended Academy lab starting size.",
+              "visible": true,
+              "defaultValue": "Standard_B2s",
+              "constraints": {
+                "required": true,
+                "allowedValues": [
+                  {
+                    "label": "Standard B2s — recommended lab size",
+                    "value": "Standard_B2s"
+                  },
+                  {
+                    "label": "Standard B2ms",
+                    "value": "Standard_B2ms"
+                  },
+                  {
+                    "label": "Standard D2s v5",
+                    "value": "Standard_D2s_v5"
+                  },
+                  {
+                    "label": "Standard D4s v5",
+                    "value": "Standard_D4s_v5"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "adminUsername",
+              "type": "Microsoft.Common.TextBox",
+              "label": "Linux administrator username",
+              "toolTip": "Administrator account for the ESP Azure VM.",
+              "visible": true,
+              "constraints": {
+                "required": true,
+                "regex": "^[a-z_][a-z0-9_-]{0,31}$",
+                "validationMessage": "Use a valid lowercase Linux username up to 32 characters."
+              },
+              "defaultValue": "azureuser"
+            },
+            {
+              "name": "authenticationType",
+              "type": "Microsoft.Common.DropDown",
+              "label": "VM authentication",
+              "toolTip": "SSH public key is recommended. Password authentication is available for Academy labs.",
+              "visible": true,
+              "defaultValue": "sshPublicKey",
+              "constraints": {
+                "required": true,
+                "allowedValues": [
+                  {
+                    "label": "SSH public key — recommended",
+                    "value": "sshPublicKey"
+                  },
+                  {
+                    "label": "Password",
+                    "value": "password"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "sshPublicKey",
+              "type": "Microsoft.Common.TextBox",
+              "label": "SSH public key",
+              "toolTip": "Paste the complete OpenSSH public key for the Linux administrator.",
+              "visible": "[equals(steps('vm').authenticationType, 'sshPublicKey')]",
+              "constraints": {
+                "required": true,
+                "regex": "^(ssh-(rsa|ed25519|dss)|ecdsa-sha2-nistp256|ecdsa-sha2-nistp384|ecdsa-sha2-nistp521) [A-Za-z0-9+/]+={0,2}( .*)?$",
+                "validationMessage": "Enter a valid OpenSSH public key."
+              },
+              "defaultValue": ""
+            },
+            {
+              "name": "adminPassword",
+              "type": "Microsoft.Common.PasswordBox",
+              "label": "Linux administrator password",
+              "toolTip": "Used only when Password authentication is selected.",
+              "visible": "[equals(steps('vm').authenticationType, 'password')]",
+              "constraints": {
+                "required": true,
+                "regex": "^(?=.*[A-Za-z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{12,72}$",
+                "validationMessage": "Use 12-72 characters with letters, numbers, and a symbol."
+              }
+            }
+          ]
+        },
+        {
+          "name": "network",
+          "label": "Networking",
+          "elements": [
+            {
+              "name": "networkInfo",
+              "type": "Microsoft.Common.InfoBox",
+              "visible": true,
+              "options": {
+                "icon": "Info",
+                "text": "For a first Academy deployment, create a new VNet and disable SSH unless you specifically need administrative access. HTTP and HTTPS remain available for the ESP portal."
+              }
+            },
+            {
+              "name": "networkMode",
+              "type": "Microsoft.Common.DropDown",
+              "label": "Network mode",
+              "toolTip": "Create a dedicated Academy VNet or attach the ESP VM to an existing subnet.",
+              "visible": true,
+              "defaultValue": "new",
+              "constraints": {
+                "required": true,
+                "allowedValues": [
+                  {
+                    "label": "Create new VNet — recommended for labs",
+                    "value": "new"
+                  },
+                  {
+                    "label": "Use existing subnet",
+                    "value": "existing"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "vnetAddressPrefix",
+              "type": "Microsoft.Common.TextBox",
+              "label": "VNet address prefix",
+              "toolTip": "IPv4 CIDR used for the new ESP virtual network.",
+              "visible": "[equals(steps('network').networkMode, 'new')]",
+              "constraints": {
+                "required": true,
+                "regex": "^(?:(?:25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})\\.){3}(?:25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})\\/(?:[0-9]|[12][0-9]|3[0-2])$",
+                "validationMessage": "Enter an IPv4 prefix such as 10.20.0.0/24."
+              },
+              "defaultValue": "10.20.0.0/24"
+            },
+            {
+              "name": "subnetAddressPrefix",
+              "type": "Microsoft.Common.TextBox",
+              "label": "ESP subnet address prefix",
+              "toolTip": "IPv4 CIDR for the ESP application subnet.",
+              "visible": "[equals(steps('network').networkMode, 'new')]",
+              "constraints": {
+                "required": true,
+                "regex": "^(?:(?:25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})\\.){3}(?:25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})\\/(?:[0-9]|[12][0-9]|3[0-2])$",
+                "validationMessage": "Enter an IPv4 prefix such as 10.20.0.0/28."
+              },
+              "defaultValue": "10.20.0.0/28"
+            },
+            {
+              "name": "existingSubnetResourceId",
+              "type": "Microsoft.Common.TextBox",
+              "label": "Existing subnet resource ID",
+              "toolTip": "Full Azure resource ID of the subnet that will host ESP.",
+              "visible": "[equals(steps('network').networkMode, 'existing')]",
+              "constraints": {
+                "required": true,
+                "regex": "^/subscriptions/[^/]+/resourceGroups/[^/]+/providers/Microsoft\\.Network/virtualNetworks/[^/]+/subnets/[^/]+$",
+                "validationMessage": "Enter a full Azure subnet resource ID."
+              },
+              "defaultValue": ""
+            },
+            {
+              "name": "sshAccessMode",
+              "type": "Microsoft.Common.DropDown",
+              "label": "SSH access",
+              "toolTip": "Controls the inbound SSH rule when a new ESP VNet is created.",
+              "visible": "[equals(steps('network').networkMode, 'new')]",
+              "defaultValue": "disabled",
+              "constraints": {
+                "required": true,
+                "allowedValues": [
+                  {
+                    "label": "Disabled — recommended",
+                    "value": "disabled"
+                  },
+                  {
+                    "label": "My IP — enter IPv4 below",
+                    "value": "myIp"
+                  },
+                  {
+                    "label": "Custom CIDR",
+                    "value": "custom"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "myIpAddress",
+              "type": "Microsoft.Common.TextBox",
+              "label": "Your public IPv4 address",
+              "toolTip": "Enter only the IPv4 address. The deployment appends /32.",
+              "visible": "[and(equals(steps('network').networkMode, 'new'), equals(steps('network').sshAccessMode, 'myIp'))]",
+              "constraints": {
+                "required": true,
+                "regex": "^(?:(?:25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})\\.){3}(?:25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})$",
+                "validationMessage": "Enter a public IPv4 address without /32."
+              },
+              "defaultValue": ""
+            },
+            {
+              "name": "customSshSourceAddressPrefix",
+              "type": "Microsoft.Common.TextBox",
+              "label": "Custom SSH source CIDR",
+              "toolTip": "CIDR permitted to reach TCP/22, for example 203.0.113.10/32.",
+              "visible": "[and(equals(steps('network').networkMode, 'new'), equals(steps('network').sshAccessMode, 'custom'))]",
+              "constraints": {
+                "required": true,
+                "regex": "^(?:(?:25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})\\.){3}(?:25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})\\/(?:3[0-2]|[12]?[0-9])$",
+                "validationMessage": "Enter an IPv4 CIDR such as 203.0.113.10/32."
+              },
+              "defaultValue": ""
+            }
+          ]
+        },
+        {
+          "name": "esp",
+          "label": "ESP Academy",
+          "elements": [
+            {
+              "name": "academyInfo",
+              "type": "Microsoft.Common.InfoBox",
+              "visible": true,
+              "options": {
+                "icon": "Info",
+                "text": "ESP is an Academy learning environment for two practical areas: ITIL-related service management capabilities available in iTop, and cloud/network automation through a customer self-service portal."
+              }
+            },
+            {
+              "name": "certificateEmail",
+              "type": "Microsoft.Common.TextBox",
+              "label": "Certificate email",
+              "toolTip": "Email used for Let's Encrypt certificate registration and renewal notices.",
+              "visible": true,
+              "constraints": {
+                "required": true,
+                "regex": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
+                "validationMessage": "Enter a valid email address."
+              },
+              "defaultValue": ""
+            },
+            {
+              "name": "espAdminUsername",
+              "type": "Microsoft.Common.TextBox",
+              "label": "ESP administrator username",
+              "toolTip": "Administrator account used to sign in to the Elrehan Service Portal.",
+              "visible": true,
+              "constraints": {
+                "required": true,
+                "regex": "^[A-Za-z0-9][A-Za-z0-9._-]{2,31}$",
+                "validationMessage": "Use 3-32 letters, numbers, dots, underscores, or hyphens."
+              },
+              "defaultValue": "admin"
+            },
+            {
+              "name": "espAdminPassword",
+              "type": "Microsoft.Common.PasswordBox",
+              "label": "ESP administrator password",
+              "toolTip": "Password for the ESP administrator account.",
+              "visible": true,
+              "constraints": {
+                "required": true,
+                "regex": "^(?=.*[A-Za-z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{12,72}$",
+                "validationMessage": "Use 12-72 characters with letters, numbers, and a symbol."
+              }
+            },
+            {
+              "name": "taggingInfo",
+              "type": "Microsoft.Common.InfoBox",
+              "visible": true,
+              "options": {
+                "icon": "Info",
+                "text": "Academy resources are automatically tagged by the deployment with application=Elrehan Service Portal, project=ESP, and managedBy=Bicep. User-defined owner/environment tags can be added in a later Academy release."
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "outputs": {
+      "parameters": {
+        "location": "[steps('basics').resourceScope.location.name]",
+        "namePrefix": "[steps('basics').namePrefix]",
+        "networkMode": "[steps('network').networkMode]",
+        "vnetAddressPrefix": "[steps('network').vnetAddressPrefix]",
+        "subnetAddressPrefix": "[steps('network').subnetAddressPrefix]",
+        "existingSubnetResourceId": "[steps('network').existingSubnetResourceId]",
+        "sshAccessEnabled": "[not(equals(steps('network').sshAccessMode, 'disabled'))]",
+        "sshSourceAddressPrefix": "[if(equals(steps('network').sshAccessMode, 'myIp'), concat(steps('network').myIpAddress, '/32'), if(equals(steps('network').sshAccessMode, 'custom'), steps('network').customSshSourceAddressPrefix, '127.0.0.1/32'))]",
+        "vmSize": "[steps('vm').vmSize]",
+        "adminUsername": "[steps('vm').adminUsername]",
+        "authenticationType": "[steps('vm').authenticationType]",
+        "sshPublicKey": "[steps('vm').sshPublicKey]",
+        "adminPassword": "[steps('vm').adminPassword]",
+        "certificateEmail": "[steps('esp').certificateEmail]",
+        "espAdminUsername": "[steps('esp').espAdminUsername]",
+        "espAdminPassword": "[steps('esp').espAdminPassword]",
+        "databaseCredentialMode": "generated",
+        "databaseUsername": "itop",
+        "databasePassword": "",
+        "databaseRootPassword": ""
+      },
+      "kind": "ResourceGroup",
+      "location": "[steps('basics').resourceScope.location.name]",
+      "resourceGroupId": "[steps('basics').resourceScope.resourceGroup.id]"
+    }
+  }
+}
